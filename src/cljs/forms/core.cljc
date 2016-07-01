@@ -1,5 +1,7 @@
 (ns forms.core
-  (:require [cljs.spec :as s]))
+  (:require
+   #?(:cljs [cljs.spec :as s]
+      :clj  [clojure.spec :as s])))
 
 ;; (s/def ::form-state
 ;;   {::value s/Any

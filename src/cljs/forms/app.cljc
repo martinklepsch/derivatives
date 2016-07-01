@@ -1,10 +1,13 @@
 (ns forms.app
   (:require [forms.core :as f]
+            [forms.dataflow :as df]
             [rum.core :as rum]
-            [rum.mdl :as mdl]
-            [goog.format.EmailAddress :as email]
-            [cljs.spec :as s]
-            [cljs.pprint :as pp]
+            #?@(:cljs [[goog.format.EmailAddress :as email]
+                       [goog.object :as gobj]])
+            #?(:cljs [cljs.spec :as s]
+               :clj  [clojure.spec :as s])
+            #?(:cljs [cljs.pprint :as pp]
+               :clj  [clojure.pprint :as pp])
             [clojure.string :as string]))
 
 (enable-console-print!)
@@ -12,10 +15,13 @@
 
 ;; Specs =====================================================================
 
-(defn valid-email? [addr] (email/isValidAddress addr))
 
-(s/def ::email valid-email?)
+(defn valid-email? [addr]
+  #?(:cljs (email/isValidAddress addr)
+     :clj  (not (string/blank? addr))))
+
 (s/def ::not-blank (s/and string? #(not (string/blank? %))))
+(s/def ::email valid-email?)
 
 (s/def ::name ::not-blank)
 (s/def ::department #{"research" "sales" "marketing" "development" "internal"})
@@ -56,7 +62,7 @@
   [db [_ form-path]]
   (let [validated (f/validate (get-in db form-path))]
     (when (f/valid? validated)
-      (js/console.info "Submitting form" (pr-str (::f/value validated))))
+      #?(:cljs (js/console.info "Submitting form" (pr-str (::f/value validated)))))
     (assoc-in db form-path validated)))
 
 (defn dispatch! [ev]
@@ -129,7 +135,7 @@
      "Submit")]
    [:pre (with-out-str (pp/pprint form))]])
 
-(rum/defc app < rum/reactive
+(rum/defc app < rum/reactive 
   [app-db]
   [:div.center.w-60.pv3
    [:span.f1.mr3 "App"]
@@ -138,5 +144,63 @@
 
 (defonce x (dispatch! [:form/init [:email-form] ::email-form]))
 
-(defn init []
-  (rum/mount (app *app) (js/document.getElementById "container")))
+;; (defn init []
+;;   (rum/mount (app *app) (js/document.getElementById "container")))
+
+;; dataflow testing ==========================================================
+
+(defn reactive-spec [base]
+  {:base   [[]           base]
+   :inc    [[:base]      (fn [base] (inc base))]
+   :as-map [[:base :inc] (fn [base inc] {:base base :after-inc inc})]
+   :sum    [[:as-map]    (fn [as-map] (+ (:base as-map) (:after-inc as-map)))]})
+
+(rum/defcs derived-view < rum/reactive (df/sub :inc) (df/sub :as-map) (df/sub :sum)
+  [s]
+  [:div
+   [:p ":inc " (-> (df/react s :inc) pr-str)]
+   [:p ":as-map " (-> (df/get-ref s :as-map) pr-str)]
+   [:p ":sum " (-> (df/get-ref s :sum) pr-str)]])
+
+(defonce *state (atom 0))
+(add-watch *state ::x (fn [_ _ _ new]
+                        (prn :base-state new)))
+
+(rum/defc dataflow-test < (df/rum-subman (reactive-spec *state))
+  []
+  [:div
+   [:h1 "Dataflow Test"]
+   [:button {:on-click #(prn @*state)} "log *state"]
+   [:button {:on-click #(swap! *state inc)} "inc"]])
+
+(rum/defc dataflow-test* ; < (df/rum-subman* first)
+  [spec]
+  [:div
+   [:h1 "Dataflow Test"]
+   [:button {:on-click #(prn @*state)} "log *state"]
+   [:button {:on-click #(swap! *state inc)} "inc"]
+   (derived-view)])
+
+#?(:cljs
+   (defn init []
+     (rum/mount (dataflow-test* (reactive-spec *state))
+                (js/document.getElementById "container"))))
+
+(comment ;server-side-rendering
+
+  (binding [df/*subscriptions* (df/build (reactive-spec (atom 1)))]
+    (spit "static.html" (rum/render-static-markup (dataflow-test))))
+  
+
+
+  (rum/defcs will-mount-test < {:will-mount (fn [s]
+                                   (prn 'sleeping-for (first (:rum/args s)))
+                                   (Thread/sleep (first (:rum/args s)))
+                                   (assoc s ::date (java.util.Date.)))}
+    [state time]
+    [:div
+     [:span (pr-str (::date state))]])
+
+  (rum/render-static-markup (will-mount-test 4000))
+
+  )
