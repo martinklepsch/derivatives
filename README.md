@@ -51,7 +51,7 @@ Also it can be turned into a registry that can help with only creating needed de
 
 > What follows is Rum specific and this library has a dependency on Rum but this pattern could be used with old Om apps, or even Reagent's reactions. I'm very open to changes in that direction.
 
-In a Rum component tree you might use *derivatives* as follows (assuming `*db-atom` and `dev-spec` as above):
+In a Rum component tree you might use *derivatives* as follows (assuming `*db-atom` and `drv-spec` as above):
 
 ```clojure
 (rum/defcs derived-view < rum/reactive (d/drv :inc) (d/drv :as-map)
