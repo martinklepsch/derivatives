@@ -21,6 +21,9 @@
  '[adzerk.boot-reload    :refer [reload]]
  '[pandeiro.boot-http    :refer [serve]])
 
+(deftask deploy []
+  (comp (pom) (jar) (push :repo "clojars")))
+
 (deftask dev []
   (set-env! :resource-paths #(conj % "example"))
   (task-options! cljs   {:optimizations :none :source-map true}
