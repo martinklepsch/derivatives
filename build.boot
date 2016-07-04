@@ -1,38 +1,24 @@
 (set-env!
- :source-paths    #{"src/cljs"}
- :resource-paths  #{"resources"}
+ :resource-paths  #{"src"}
  :dependencies '[[adzerk/boot-cljs          "1.7.228-1"  :scope "test"]
                  [adzerk/boot-reload        "0.4.11"      :scope "test"]
                  [pandeiro/boot-http        "0.7.3"      :scope "test"]
                  [org.clojure/clojurescript "1.9.93"]
-                 [com.stuartsierra/component "0.3.1"]
+                 [com.stuartsierra/dependency "0.2.0"]
                  [rum "0.9.1"]])
 
-(require
- '[adzerk.boot-cljs      :refer [cljs]]
- '[adzerk.boot-reload    :refer [reload]]
- '[pandeiro.boot-http    :refer [serve]])
+(task-options!
+ pom {:project     'org.martinklepsch/derivatives
+      :version     +version+
+      :description "Push things to S3, but be lazy about it."
+      :url         "https://github.com/confetti-clj/s3-deploy"
+      :scm         {:url "https://github.com/confetti-clj/s3-deploy"}})
 
-(deftask build []
-  (comp (speak) (cljs)))
-
-(deftask run []
+(deftask dev []
+  (task-options! cljs   {:optimizations :none :source-map true}
+                 reload {:on-jsload 'forms.app/init})
   (comp (serve)
         (watch)
         (reload)
-        (build)))
-
-(deftask production []
-  (task-options! cljs {:optimizations :advanced})
-  identity)
-
-(deftask development []
-  (task-options! cljs {:optimizations :none :source-map true}
-                 reload {:on-jsload 'forms.app/init})
-  identity)
-
-(deftask dev
-  "Simple alias to run application in development mode"
-  []
-  (comp (development)
-        (run)))
+        (speak)
+        (cljs)))
