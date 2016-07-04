@@ -51,7 +51,7 @@ Also it can be turned into a registry that can help with only creating needed de
 
 In a Rum component tree you might use *derivatives* as follows (assuming `*db-atom` and `dev-spec` as above):
 
-```
+```clojure
 (rum/defcs derived-view < rum/reactive (d/drv :inc) (d/drv :as-map)
   [s]
   [:div
