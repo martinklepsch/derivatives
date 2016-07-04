@@ -113,3 +113,11 @@ The benefit here is that we don't use vars to make sure the dependencies are met
 
 - In Re-Frame you can do `(subscribe [:sub-id "a parameter"])`, with *derivatives* you can't. Instead these parameters need to be put into `db` and be used (potentially via another *derivative*) from there.
 - In Re-Frame subscriptions may have side-effects to listen to remote changes etc. This library does not intend to solve this kind of problem and thus side effects are discouraged.
+
+## Contributing
+
+Feedback and PRs welcome.
+
+--
+
+**License:** MPLv2, see `LICENSE`.
