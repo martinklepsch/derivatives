@@ -31,6 +31,10 @@ A secondary objective is also to achieve the above without relying on global sta
 
 ## Usage
 
+```
+[org.martinklepsch/derivatives "0.1.0"]
+```
+
 *Derivatives* of your application state can be defined via a kind of specification like the one below:
 
 ```clojure
