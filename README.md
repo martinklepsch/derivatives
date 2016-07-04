@@ -49,6 +49,8 @@ A specification like the above can be easily turned into a map with the same key
 
 Also it can be turned into a registry that can help with only creating needed derivatives and freeing them up when they become unused (see `org.martinklepsch.derivatives/derivatives-manager`).
 
+> What follows is Rum specific and this library has a dependency on Rum but this pattern could be used with old Om apps, or even Reagent's reactions. I'm very open to changes in that direction.
+
 In a Rum component tree you might use *derivatives* as follows (assuming `*db-atom` and `dev-spec` as above):
 
 ```clojure
