@@ -71,7 +71,7 @@ The `rum-derivatives` mixin adds two functions to the React context of all child
 
 ## Comparisons
 
-#### Plain `rum.core/derived-atom`
+##### Plain `rum.core/derived-atom`
 
 Rum's derived-atoms serve as building block in this library but there are some things which are (rightfully) not solved by derived-atoms:
 
@@ -111,7 +111,7 @@ compared with the way this could be described using *derivatives*:
 The benefit here is that we don't use vars to make sure the dependencies are met and that we provide this information in a way that can easily be turned into a dependency graph (data FTW) which will later help us only calculating required *derivatives* (done by `derivatives-manager`). In comparison the first snippet will create derived-atoms and recalculate them whenever any of their dependencies change, no matter if you're using the derived-atom in any of your views.
 
 
-#### Re-Frame Subscriptions
+##### Re-Frame Subscriptions
 
 The way they work Re-Frame's dynamic subscriptions are not much different from the approach chosen here, they vary in two ways however:
 
