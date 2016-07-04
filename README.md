@@ -65,11 +65,11 @@ In a Rum component tree you might use *derivatives* as follows (assuming `*db-at
    (derived-view)])
 ```
 
-
+The `rum-derivatives` mixin adds two functions to the React context of all child components: one to get a *derivative* and one to release it. The `drv` mixin adds hooks to your components that do exactly that and allow you to access the derivatives via component state. 
 
 ## Comparisons
 
-**Plain `rum.core/derived-atom`**
+#### Plain `rum.core/derived-atom`
 
 Rum's derived-atoms serve as building block in this library but there are some things which are (rightfully) not solved by derived-atoms:
 
@@ -106,10 +106,10 @@ compared with the way this could be described using *derivatives*:
    :as-map    [[:db :increased] (fn [db incd] {:db db :increased inch})]})
 ```
 
-The benefit here is that we don't use vars to make sure the dependencies are met and that we provide this information in a way that can easily be turned into a dependency graph which will later help us only calculating required *derivatives* (done by `derivatives-manager`). In comparison the first snippet will create derived-atoms and recalculate them whenever any of their dependencies change, no matter if you're using the derived-atom in any of your views.
+The benefit here is that we don't use vars to make sure the dependencies are met and that we provide this information in a way that can easily be turned into a dependency graph (data FTW) which will later help us only calculating required *derivatives* (done by `derivatives-manager`). In comparison the first snippet will create derived-atoms and recalculate them whenever any of their dependencies change, no matter if you're using the derived-atom in any of your views.
 
 
-**Re-Frame Subscriptions**
+#### Re-Frame Subscriptions
 
 - In Re-Frame you can do `(subscribe [:sub-id "a parameter"])`, with *derivatives* you can't. Instead these parameters need to be put into `db` and be used (potentially via another *derivative*) from there.
 - In Re-Frame subscriptions may have side-effects to listen to remote changes etc. This library does not intend to solve this kind of problem and thus side effects are discouraged.
