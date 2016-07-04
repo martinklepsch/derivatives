@@ -139,8 +139,11 @@
   "Get the derivative identified by `der-k` from the component state.
    When rendering in Clojure this looks for `der-k` in the dynvar `*derivatives`"
   [state der-k]
-  #?(:cljs (get-in state [::derivatives der-k])
-     :clj  (get *derivatives* der-k)))
+  (or #?(:cljs (get-in state [::derivatives der-k])
+         :clj  (get *derivatives* der-k))
+      (throw (ex-info (str "No derivative found! Maybe you forgot a (drv " der-k ") mixin?")
+                      {:key der-k :derivatives #?(:cljs (keys (::derivatives state))
+                                                  :clj (keys *derivatives*))}))))
 
 (defn react
   "Like `get-ref` wrapped in `rum.core/react`"
