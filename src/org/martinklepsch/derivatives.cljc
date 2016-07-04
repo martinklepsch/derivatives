@@ -41,9 +41,9 @@
   (apply s/union (set ks) (map #(dep/transitive-dependencies graph %) ks)))
 
 (defn sync-derivatives
-  "Update the derivatives map `der-map` so that all keys passed in `order`
+  "Update the derivatives map `drv-map` so that all keys passed in `order`
    are statisfied and any superfluous keys are removed"
-  [spec der-map order]
+  [spec drv-map order]
   (reduce (fn [m k]
             (let [[direct-deps derive] (-> spec k)]
               (if (get m k)
@@ -53,7 +53,7 @@
                     (prn :creating-new-ref k)
                     (assoc m k (rum/derived-atom (map #(get m %) direct-deps) k derive)))
                   (assoc m k derive)))))
-          (select-keys der-map order) 
+          (select-keys drv-map order)
           order))
 
 (defn derivatives-manager
@@ -71,20 +71,20 @@
         sync! (fn [new-registry]
                 (let [required? (calc-deps graph (keys new-registry))
                       ordered   (filter required? (dep/topo-sort graph))
-                      new-ders  (sync-derivatives spec (:derivatives @state) ordered)]
-                  (swap! state assoc :derivatives new-ders, :registry new-registry)
-                  new-ders))]
-    {:get! (fn get! [der-k token]
+                      new-drvs  (sync-derivatives spec (:derivatives @state) ordered)]
+                  (swap! state assoc :derivatives new-drvs, :registry new-registry)
+                  new-drvs))]
+    {:get! (fn get! [drv-k token]
              (let [registry  (:registry @state)
-                   new-reg   (update registry der-k (fnil conj #{}) token)]
-               (if-let [derivative (get (sync! new-reg) der-k)]
+                   new-reg   (update registry drv-k (fnil conj #{}) token)]
+               (if-let [derivative (get (sync! new-reg) drv-k)]
                  derivative
-                 (throw (ex-info (str "No derivative defined for " der-k) {:key der-k})))))
-     :release! (fn release! [der-k token]
+                 (throw (ex-info (str "No derivative defined for " drv-k) {:key drv-k})))))
+     :release! (fn release! [drv-k token]
               (let [registry  (:registry @state)
-                    new-reg   (if (= #{token} (get registry der-k))
-                                (dissoc registry der-k)
-                                (update registry der-k disj token))]
+                    new-reg   (if (= #{token} (get registry drv-k))
+                                (dissoc registry drv-k)
+                                (update registry drv-k disj token))]
                 (sync! new-reg)
                 nil))}))
 
@@ -116,39 +116,39 @@
                                     {release-k release! get-k get!}))}))
 
   (defn drv
-    "Rum mixin to retrieve a derivative for `:der-k` using the functions in the component context
+    "Rum mixin to retrieve a derivative for `:drv-k` using the functions in the component context
      To get the derived-atom use `get-ref` for swappable client/server behavior"
-    [der-k]
+    [drv-k]
     #?(:cljs 
        (let [token (rand-int 10000)] ;TODO
          {:class-properties {:contextTypes {get-k     js/React.PropTypes.func
                                             release-k js/React.PropTypes.func}}
           :will-mount    (fn [s]
-                           (let [get-der! (-> s :rum/react-component (gobj/get "context") (gobj/get get-k))]
-                             (assert get-der! "No get! derivative function found in component context")
-                             (assoc-in s [::derivatives der-k] (get-der! der-k))))
+                           (let [get-drv! (-> s :rum/react-component (gobj/get "context") (gobj/get get-k))]
+                             (assert get-drv! "No get! derivative function found in component context")
+                             (assoc-in s [::derivatives drv-k] (get-drv! drv-k))))
           :will-unmount  (fn [s]
-                           (let [release-der! (-> s :rum/react-component (gobj/get "context") (gobj/get release-k))]
-                             (assert release-der! "No release! derivative function found in component context")
-                             (release-der! der-k)
-                             (update s ::derivatives dissoc der-k)))}))))
+                           (let [release-drv! (-> s :rum/react-component (gobj/get "context") (gobj/get release-k))]
+                             (assert release-drv! "No release! derivative function found in component context")
+                             (release-drv! drv-k)
+                             (update s ::derivatives dissoc drv-k)))}))))
 
 (def ^:dynamic *derivatives* nil)
 
 (defn get-ref
-  "Get the derivative identified by `der-k` from the component state.
-   When rendering in Clojure this looks for `der-k` in the dynvar `*derivatives`"
-  [state der-k]
-  (or #?(:cljs (get-in state [::derivatives der-k])
-         :clj  (get *derivatives* der-k))
-      (throw (ex-info (str "No derivative found! Maybe you forgot a (drv " der-k ") mixin?")
-                      {:key der-k :derivatives #?(:cljs (keys (::derivatives state))
+  "Get the derivative identified by `drv-k` from the component state.
+   When rendering in Clojure this looks for `drv-k` in the dynvar `*derivatives`"
+  [state drv-k]
+  (or #?(:cljs (get-in state [::derivatives drv-k])
+         :clj  (get *derivatives* drv-k))
+      (throw (ex-info (str "No derivative found! Maybe you forgot a (drv " drv-k ") mixin?")
+                      {:key drv-k :derivatives #?(:cljs (keys (::derivatives state))
                                                   :clj (keys *derivatives*))}))))
 
 (defn react
   "Like `get-ref` wrapped in `rum.core/react`"
-  [state der-k]
-  (rum/react (get-ref state der-k)))
+  [state drv-k]
+  (rum/react (get-ref state drv-k)))
 
 (def base (atom 0))
 
