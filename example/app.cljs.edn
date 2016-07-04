@@ -1,0 +1,2 @@
+{:require  [drv-example.app]
+ :init-fns [drv-example.app/init]}
