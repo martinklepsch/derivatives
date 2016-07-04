@@ -113,6 +113,8 @@ The benefit here is that we don't use vars to make sure the dependencies are met
 
 #### Re-Frame Subscriptions
 
+The way they work Re-Frame's dynamic subscriptions are not much different from the approach chosen here, they vary in two ways however:
+
 - In Re-Frame you can do `(subscribe [:sub-id "a parameter"])`, with *derivatives* you can't. Instead these parameters need to be put into `db` and be used (potentially via another *derivative*) from there.
 - In Re-Frame subscriptions may have side-effects to listen to remote changes etc. This library does not intend to solve this kind of problem and thus side effects are discouraged.
 
