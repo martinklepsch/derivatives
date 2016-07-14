@@ -91,8 +91,8 @@
 
 ;; RUM specific code ===========================================================
 
-(let [get-k     ":derivatives/get"
-      release-k ":derivatives/release"]
+(let [get-k     (str ::get)
+      release-k (str ::release)]
 
   (defn rum-derivatives
     "Given the passed spec add get!/release! derivative functions to
@@ -126,11 +126,11 @@
           :will-mount    (fn [s]
                            (let [get-drv! (-> s :rum/react-component (gobj/get "context") (gobj/get get-k))]
                              (assert get-drv! "No get! derivative function found in component context")
-                             (assoc-in s [::derivatives drv-k] (get-drv! drv-k))))
+                             (assoc-in s [::derivatives drv-k] (get-drv! drv-k token))))
           :will-unmount  (fn [s]
                            (let [release-drv! (-> s :rum/react-component (gobj/get "context") (gobj/get release-k))]
                              (assert release-drv! "No release! derivative function found in component context")
-                             (release-drv! drv-k)
+                             (release-drv! drv-k token)
                              (update s ::derivatives dissoc drv-k)))}))))
 
 (def ^:dynamic *derivatives* nil)
@@ -150,12 +150,9 @@
   [state drv-k]
   (rum/react (get-ref state drv-k)))
 
-(def base (atom 0))
-
 (comment 
-                
+  (def base (atom 0))
 
-  
   (def test-subman (subman (reactive-spec base)))
 
   ((:get! test-subman) :ainc "y")
