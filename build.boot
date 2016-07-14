@@ -22,7 +22,8 @@
  '[pandeiro.boot-http    :refer [serve]])
 
 (deftask deploy []
-  (comp (pom) (jar) (push :repo "clojars")))
+  (comp (pom) (jar) (push :repo "clojars"
+                          :tag true)))
 
 (deftask dev []
   (set-env! :resource-paths #(conj % "example"))
