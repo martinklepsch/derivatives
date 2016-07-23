@@ -65,6 +65,7 @@
     is no longer needed by `token`, if there are no more tokens needing
     the derivative it will be removed"
   [spec]
+  {:pre [(map? spec)]}
   (let [graph (spec->graph spec)
         state (atom {:registry   {}
                      :dervatives {}})
@@ -119,7 +120,7 @@
     "Rum mixin to retrieve a derivative for `:drv-k` using the functions in the component context
      To get the derived-atom use `get-ref` for swappable client/server behavior"
     [drv-k]
-    #?(:cljs 
+    #?(:cljs
        (let [token (rand-int 10000)] ;TODO
          {:class-properties {:contextTypes {get-k     js/React.PropTypes.func
                                             release-k js/React.PropTypes.func}}
