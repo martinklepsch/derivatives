@@ -17,24 +17,6 @@
              (dep/graph)
              spec))
 
-(defn build
-  "Given a spec return a map of similar structure replacing it's values with
-   derived atoms built based on the depedency information encoded in the spec
-
-   WARNING: This will create derived atoms for all keys so it may lead
-  to some uneccesary computations To avoid this issue consider using
-  `derivatives-manager` which manages derivatives in a registry
-  removing them as soon as they become unused"
-  [spec]
-  (let [graph (spec->graph spec)]
-    (reduce (fn [m k]
-              (let [[direct-deps derive] (-> spec k)]
-                (if (fn? derive) ; for the lack of `atom?`
-                  (assoc m k (rum/derived-atom (map m direct-deps) k derive))
-                  (assoc m k derive))))
-            {}
-            (dep/topo-sort graph))))
-
 (defn calc-deps
   "Calculate all dependencies for `ks` and return a set with the dependencies and `ks`"
   [graph ks]
@@ -55,6 +37,18 @@
                     (assoc m k (rum/derived-atom (map #(get m %) direct-deps) k derive)))))))
           (select-keys drv-map order)
           order))
+
+(defn build
+  "Given a spec return a map of similar structure replacing it's values with
+   derived atoms built based on the depedency information encoded in the spec
+
+   WARNING: This will create derived atoms for all keys so it may lead
+  to some uneccesary computations To avoid this issue consider using
+  `derivatives-manager` which manages derivatives in a registry
+  removing them as soon as they become unused"
+  [spec]
+  {:pre [(map? spec)]}
+  (sync-derivatives spec {} (dep/topo-sort (spec->graph spec))))
 
 (defn derivatives-manager
   "Given a derivatives spec return a map with `get!` and `free!` functions.
