@@ -58,10 +58,10 @@
 
 (defn derivatives-manager
   "Given a derivatives spec return a map with `get!` and `free!` functions.
-  
+
   - (get! derivative-id token) will retrieve a derivative for
-    `derivative-id` registering the usage with `token` 
-  - (free! derivative-id token) will indicate the derivative `derivative-id` 
+    `derivative-id` registering the usage with `token`
+  - (free! derivative-id token) will indicate the derivative `derivative-id`
     is no longer needed by `token`, if there are no more tokens needing
     the derivative it will be removed"
   [spec]
