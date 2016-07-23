@@ -82,12 +82,12 @@
                  derivative
                  (throw (ex-info (str "No derivative defined for " drv-k) {:key drv-k})))))
      :release! (fn release! [drv-k token]
-              (let [registry  (:registry @state)
-                    new-reg   (if (= #{token} (get registry drv-k))
-                                (dissoc registry drv-k)
-                                (update registry drv-k disj token))]
-                (sync! new-reg)
-                nil))}))
+                 (let [registry  (:registry @state)
+                       new-reg   (if (= #{token} (get registry drv-k))
+                                   (dissoc registry drv-k)
+                                   (update registry drv-k disj token))]
+                   (sync! new-reg)
+                   nil))}))
 
 
 ;; RUM specific code ===========================================================
