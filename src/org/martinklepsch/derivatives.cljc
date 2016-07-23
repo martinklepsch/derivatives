@@ -91,24 +91,24 @@
 
 ;; RUM specific code ===========================================================
 
-(let [get-k     (str ::get)
-      release-k (str ::release)]
+(let [get-k     "org.martinklepsch.derivatives/get"
+      release-k "org.martinklepsch.derivatives/release"]
 
   (defn rum-derivatives
     "Given the passed spec add get!/release! derivative functions to
     the child context so they can be seen by components using the `deriv`
     mixin."
     [spec]
-    #?(:cljs 
+    #?(:cljs
        {:class-properties {:childContextTypes {get-k     js/React.PropTypes.func
                                                release-k js/React.PropTypes.func}}
         :child-context    (fn [_] (let [{:keys [release! get!]} (derivatives-manager spec)]
-                                    {release-k release! get-k get!}))})) 
+                                    {release-k release! get-k get!}))}))
 
   (defn rum-derivatives*
     "Like rum-derivatives but get the spec from the arguments passed to the components (`:rum/args`) using `get-spec-fn`"
     [get-spec-fn]
-    #?(:cljs 
+    #?(:cljs
        {:class-properties {:childContextTypes {get-k     js/React.PropTypes.func
                                                release-k js/React.PropTypes.func}}
         :init             (fn [s _] (assoc s ::spec (get-spec-fn (:rum/args s))))
