@@ -48,11 +48,11 @@
             (let [[direct-deps derive] (-> spec k)]
               (if (get m k)
                 m
-                (if (fn? derive) ; for the lack of `atom?`
-                  (do 
+                (if (implements? IWatchable derive)
+                  (assoc m k derive)
+                  (do
                     (prn :creating-new-ref k)
-                    (assoc m k (rum/derived-atom (map #(get m %) direct-deps) k derive)))
-                  (assoc m k derive)))))
+                    (assoc m k (rum/derived-atom (map #(get m %) direct-deps) k derive)))))))
           (select-keys drv-map order)
           order))
 
