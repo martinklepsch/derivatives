@@ -1,11 +1,12 @@
 (set-env!
  :resource-paths  #{"src"}
  :dependencies '[[adzerk/boot-cljs          "1.7.228-1"  :scope "test"]
+                 [adzerk/boot-test          "1.1.2"      :scope "test"]
                  [adzerk/boot-reload        "0.4.11"     :scope "test"]
                  [pandeiro/boot-http        "0.7.3"      :scope "test"]
                  [org.clojure/clojurescript "1.9.93"     :scope "provided"]
                  [com.stuartsierra/dependency "0.2.0"]
-                 [rum "0.9.1"]])
+                 [rum "0.10.5"]])
 
 (task-options!
  pom {:project     'org.martinklepsch/derivatives
@@ -18,12 +19,12 @@
 
 (require
  '[adzerk.boot-cljs      :refer [cljs]]
+ '[adzerk.boot-test      :refer [test]]
  '[adzerk.boot-reload    :refer [reload]]
  '[pandeiro.boot-http    :refer [serve]])
 
 (deftask deploy []
-  (comp (pom) (jar) (push :repo "clojars"
-                          :tag true)))
+  (comp (pom) (jar) (push :repo "clojars" :tag true)))
 
 (deftask dev []
   (set-env! :resource-paths #(conj % "example"))

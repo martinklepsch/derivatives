@@ -22,6 +22,12 @@
   [graph ks]
   (apply s/union (set ks) (map #(dep/transitive-dependencies graph %) ks)))
 
+(defn watchable?
+  "Platform-agnostic helper to determine if something is watchable (atom, etc)"
+  [x]
+  #?(:cljs (satisfies? IWatchable x)
+     :clj  (instance? clojure.lang.Atom x)))
+
 (defn sync-derivatives
   "Update the derivatives map `drv-map` so that all keys passed in `order`
    are statisfied and any superfluous keys are removed"
@@ -30,11 +36,9 @@
             (let [[direct-deps derive] (-> spec k)]
               (if (get m k)
                 m
-                (if (implements? IWatchable derive)
+                (if (watchable? derive)
                   (assoc m k derive)
-                  (do
-                    (prn :creating-new-ref k)
-                    (assoc m k (rum/derived-atom (map #(get m %) direct-deps) k derive)))))))
+                  (assoc m k (rum/derived-atom (map #(get m %) direct-deps) k derive))))))
           (select-keys drv-map order)
           order))
 
@@ -44,13 +48,39 @@
 
    WARNING: This will create derived atoms for all keys so it may lead
   to some uneccesary computations To avoid this issue consider using
-  `derivatives-manager` which manages derivatives in a registry
+  `derivatives-pool` which manages derivatives in a registry
   removing them as soon as they become unused"
   [spec]
   {:pre [(map? spec)]}
   (sync-derivatives spec {} (dep/topo-sort (spec->graph spec))))
 
-(defn derivatives-manager
+(defn ^:private required-drvs [graph registry]
+  (let [required? (calc-deps graph (keys registry))]
+    (filter required? (dep/topo-sort graph))))
+
+(defprotocol IDerivativesPool
+  (get! [this drv-k token])
+  (release! [this drv-k token]))
+
+(defrecord DerivativesPool [spec graph state]
+  IDerivativesPool
+  (get! [this drv-k token]
+    (if-not (get spec drv-k)
+      (throw (ex-info (str "No derivative defined for " drv-k) {:key drv-k}))
+      (let [new-reg  (update (:registry @state) drv-k (fnil conj #{}) token)
+            new-drvs (sync-derivatives spec (:derivatives @state) (required-drvs graph new-reg))]
+        (reset! state {:derivatives new-drvs :registry new-reg})
+        (get new-drvs drv-k))))
+  (release! [this drv-k token]
+    (let [registry  (:registry @state)
+          new-reg   (if (= #{token} (get registry drv-k))
+                      (dissoc registry drv-k)
+                      (update registry drv-k disj token))
+          new-drvs (sync-derivatives spec (:derivatives @state) (required-drvs graph new-reg))]
+      (reset! state {:derivatives new-drvs :registry new-reg})
+      nil)))
+
+(defn derivatives-pool
   "Given a derivatives spec return a map with `get!` and `free!` functions.
 
   - (get! derivative-id token) will retrieve a derivative for
@@ -59,30 +89,9 @@
     is no longer needed by `token`, if there are no more tokens needing
     the derivative it will be removed"
   [spec]
-  {:pre [(map? spec)]}
-  (let [graph (spec->graph spec)
-        state (atom {:registry   {}
-                     :dervatives {}})
-        sync! (fn [new-registry]
-                (let [required? (calc-deps graph (keys new-registry))
-                      ordered   (filter required? (dep/topo-sort graph))
-                      new-drvs  (sync-derivatives spec (:derivatives @state) ordered)]
-                  (swap! state assoc :derivatives new-drvs, :registry new-registry)
-                  new-drvs))]
-    {:get! (fn get! [drv-k token]
-             (let [registry  (:registry @state)
-                   new-reg   (update registry drv-k (fnil conj #{}) token)]
-               (if-let [derivative (get (sync! new-reg) drv-k)]
-                 derivative
-                 (throw (ex-info (str "No derivative defined for " drv-k) {:key drv-k})))))
-     :release! (fn release! [drv-k token]
-                 (let [registry  (:registry @state)
-                       new-reg   (if (= #{token} (get registry drv-k))
-                                   (dissoc registry drv-k)
-                                   (update registry drv-k disj token))]
-                   (sync! new-reg)
-                   nil))}))
-
+  (let [dm (->DerivativesPool spec (spec->graph spec) (atom {}))]
+    {:get! (partial get! dm)
+     :release! (partial release! dm)}))
 
 ;; RUM specific code ===========================================================
 
@@ -97,7 +106,7 @@
     #?(:cljs
        {:class-properties {:childContextTypes {get-k     js/React.PropTypes.func
                                                release-k js/React.PropTypes.func}}
-        :child-context    (fn [_] (let [{:keys [release! get!]} (derivatives-manager spec)]
+        :child-context    (fn [_] (let [{:keys [release! get!]} (derivatives-pool spec)]
                                     {release-k release! get-k get!}))}))
 
   (defn rum-derivatives*
@@ -107,7 +116,7 @@
        {:class-properties {:childContextTypes {get-k     js/React.PropTypes.func
                                                release-k js/React.PropTypes.func}}
         :init             (fn [s _] (assoc s ::spec (get-spec-fn (:rum/args s))))
-        :child-context    (fn [s] (let [{:keys [release! get!]} (derivatives-manager (::spec s))]
+        :child-context    (fn [s] (let [{:keys [release! get!]} (derivatives-pool (::spec s))]
                                     {release-k release! get-k get!}))}))
 
   (defn drv
@@ -196,5 +205,21 @@
   (free! :base "y")
 
   (prn (::reactions @*registry))
+
+  )
+
+(comment
+
+  (def state (atom {}))
+
+  (defn ->spec [db]
+    {:base    [[] db]
+     :derived [[:base] (fn [base] (inc base))]})
+
+  (spec->graph (->spec state))
+
+  (dep/topo-sort (spec->graph (->spec state)))
+
+  (calc-deps (spec->graph (->spec state)) [:base])
 
   )
