@@ -10,7 +10,7 @@
 
 (task-options!
  pom {:project     'org.martinklepsch/derivatives
-      :version     "0.1.0" 
+      :version     "0.1.1"
       :description "Chains of derived values"
       :url         "https://github.com/martinklepsch/derivatives"
       :scm         {:url "https://github.com/martinklepsch/derivatives"}})

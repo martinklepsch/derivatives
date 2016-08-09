@@ -1,4 +1,4 @@
-### 0.1.1 (unreleased)
+### 0.1.1
 
 - add tests
 - implement `build` in terms of `sync-derivatives`
