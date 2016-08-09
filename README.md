@@ -31,8 +31,8 @@ A secondary objective is also to achieve the above without relying on global sta
 
 ## Usage
 
-```
-[org.martinklepsch/derivatives "0.1.0"]
+```clojure
+[org.martinklepsch/derivatives "0.1.1"]
 ```
 
 *Derivatives* of your application state can be defined via a kind of specification like the one below:
@@ -40,7 +40,7 @@ A secondary objective is also to achieve the above without relying on global sta
 ```clojure
 (def *db-atom (atom 0))
 
-(def drv-spec 
+(def drv-spec
   {;; a source with no dependencies
    :db     [[]         your-db-atom]
    ;; a derivative with a dependency
