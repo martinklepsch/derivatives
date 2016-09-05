@@ -3,21 +3,33 @@
 (defprotocol IDisposable
   (dispose! [this]))
 
-(defrecord DerivedValue [sources sink k]
-  IDisposable
-  (dispose! [this]
-    (doseq [s sources]
-      (prn 'removing-watch s k)
-      (remove-watch s k))
-    this)
-  #?@(:cljs
-      [IDeref
-       (-deref [this]
-               (deref sink))]
-      :clj
-      [clojure.lang.IDeref
-       (deref [this]
-              (deref sink))]))
+#?(:clj
+   (deftype DerivedValue [sink sources key]
+     clojure.lang.IDeref
+     (deref [_] @sink)
+
+     clojure.lang.IRef
+     (addWatch [this key cb] (add-watch sink key cb))
+     (removeWatch [_ key] (remove-watch sink key))
+
+     IDisposable
+     (dispose! [this]
+       (doseq [s sources]
+         (remove-watch s key))))
+
+   :cljs
+   (deftype DerivedValue [sink sources key]
+     IDeref
+     (-deref [_] @sink)
+
+     IWatchable
+     (-add-watch [self key cb] (add-watch sink key cb))
+     (-remove-watch [_ key] (remove-watch sink key))
+
+     IDisposable
+     (dispose! [this]
+       (doseq [s sources]
+         (remove-watch s key)))))
 
 (defn derived-value
   ([refs key f]
@@ -40,31 +52,27 @@
                     (reset! sink (recalc))))]
      (doseq [ref refs]
        (add-watch ref key watch))
-     (->DerivedValue refs sink key))))
+     (->DerivedValue sink refs key))))
 
-#?(:clj 
-   (defmethod print-method DerivedValue [v ^java.io.Writer w]
-     (.write w "<<DerivedValue ")
-     (.write w (pr-str (into {} v)))
-     (.write w ">>")))
-
-(comment 
+(comment
   (def a (atom {:a 1}))
 
   (def b (atom {:b 1}))
 
   (def der
-    (derived-atom [a b] :ab (fn [a b] (prn 'recomputing) (merge a b))))
+    (derived-value [a b] :ab (fn [a b] (prn 'recomputing) (merge a b))))
 
   (def derv
     (derived-value [a b] :ab (fn [a b] (prn 'recomputing) (merge a b))))
 
-  @derv
-  (dispose! derv)
+  @der
+
+  (dispose! der)
 
   (swap! b update :b inc)
 
-  (pr-str (into {} (->DerivedValue nil nil nil)))
+  (pr-str (->DerivedValue nil nil nil))
+
   (pr (->DerivedValue nil nil nil))
 
 

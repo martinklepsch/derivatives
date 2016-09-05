@@ -1,5 +1,6 @@
 (ns org.martinklepsch.derivatives
   (:require [com.stuartsierra.dependency :as dep]
+            [org.martinklepsch.derived :as derived]
             [clojure.set :as s]
             [rum.core :as rum]
             #?(:cljs [goog.object :as gobj])))
@@ -28,31 +29,43 @@
   #?(:cljs (satisfies? IWatchable x)
      :clj  (instance? clojure.lang.Atom x)))
 
-(defn sync-derivatives
+(defn not-required
+  [drv-map required?]
+  {:pre [(set? required?)]}
+  (reduce-kv (fn [xs k drv-val]
+               (if (required? k) xs (conj xs drv-val)))
+             []
+             drv-map))
+
+(defn sync-derivatives!
   "Update the derivatives map `drv-map` so that all keys passed in `order`
-   are statisfied and any superfluous keys are removed"
+  are statisfied and any superfluous keys are removed.
+  Values of superfluous keys that implement IDisposable they will also be disposed."
   [spec drv-map order]
+  (doseq [drv-val (not-required drv-map (set order))]
+    (when (satisfies? derived/IDisposable drv-val)
+      (derived/dispose! drv-val)))
   (reduce (fn [m k]
             (let [[direct-deps derive] (-> spec k)]
               (if (get m k)
                 m
                 (if (watchable? derive)
                   (assoc m k derive)
-                  (assoc m k (rum/derived-atom (map #(get m %) direct-deps) k derive))))))
+                  (assoc m k (derived/derived-value (map #(get m %) direct-deps) k derive))))))
           (select-keys drv-map order)
           order))
 
 (defn build
   "Given a spec return a map of similar structure replacing it's values with
-   derived atoms built based on the depedency information encoded in the spec
+  derived atoms built based on the depedency information encoded in the spec
 
-   WARNING: This will create derived atoms for all keys so it may lead
+  WARNING: This will create derived atoms for all keys so it may lead
   to some uneccesary computations To avoid this issue consider using
   `derivatives-pool` which manages derivatives in a registry
   removing them as soon as they become unused"
   [spec]
   {:pre [(map? spec)]}
-  (sync-derivatives spec {} (dep/topo-sort (spec->graph spec))))
+  (sync-derivatives! spec {} (dep/topo-sort (spec->graph spec))))
 
 (defn ^:private required-drvs [graph registry]
   (let [required? (calc-deps graph (keys registry))]
@@ -68,7 +81,7 @@
     (if-not (get spec drv-k)
       (throw (ex-info (str "No derivative defined for " drv-k) {:key drv-k}))
       (let [new-reg  (update (:registry @state) drv-k (fnil conj #{}) token)
-            new-drvs (sync-derivatives spec (:derivatives @state) (required-drvs graph new-reg))]
+            new-drvs (sync-derivatives! spec (:derivatives @state) (required-drvs graph new-reg))]
         (reset! state {:derivatives new-drvs :registry new-reg})
         (get new-drvs drv-k))))
   (release! [this drv-k token]
@@ -76,7 +89,7 @@
           new-reg   (if (= #{token} (get registry drv-k))
                       (dissoc registry drv-k)
                       (update registry drv-k disj token))
-          new-drvs (sync-derivatives spec (:derivatives @state) (required-drvs graph new-reg))]
+          new-drvs (sync-derivatives! spec (:derivatives @state) (required-drvs graph new-reg))]
       (reset! state {:derivatives new-drvs :registry new-reg})
       nil)))
 
@@ -124,7 +137,7 @@
      To get the derived-atom use `get-ref` for swappable client/server behavior"
     [drv-k]
     #?(:cljs
-       (let [token (rand-int 10000)] ;TODO
+       (let [token (rand-int 10000)] ; TODO think of something better here
          {:class-properties {:contextTypes {get-k     js/React.PropTypes.func
                                             release-k js/React.PropTypes.func}}
           :will-mount    (fn [s]
