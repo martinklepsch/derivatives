@@ -46,7 +46,7 @@
     (let [drvs-updated (drv/sync-derivatives! spec drvs [:base :inc :as-map])]
       (t/is (= [:inc :as-map] @compute-log)))))
 
-;; fails, fixed by proper disposable derived-atoms
+;; This test will fail if watches are not properly removed from source refs
 (t/deftest watches-disposed-test
   (let [base  (atom 1)
         spec  (test-spec base)
