@@ -126,6 +126,8 @@ The way they work Re-Frame's dynamic subscriptions are not much different from t
 
 Feedback and PRs welcome.
 
+Tests can be run with `boot --source-paths test test` or `boot -s test test`.
+
 --
 
 **License:** MPLv2, see `LICENSE`.

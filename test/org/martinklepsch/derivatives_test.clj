@@ -13,6 +13,12 @@
    :as-map [[:base :inc] (fn [base inc] (log! :as-map) {:base base :after-inc inc})]
    :sum    [[:as-map]    (fn [as-map] (log! :sum) (+ (:base as-map) (:after-inc as-map)))]})
 
+
+(t/deftest not-required-test
+  (t/is (= [2] (drv/not-required {:a 1 :b 2} #{:a})))
+  (t/is (= [1 2] (drv/not-required {:a 1 :b 2} #{:c})))
+  (t/is (= [] (drv/not-required {:a 1 :b 2} #{:a :b}))))
+
 (t/deftest build-test
   (let [drvs (drv/build (test-spec (atom 1)))]
     (t/is (= 1 @(:base drvs)))
@@ -21,7 +27,7 @@
     (t/is (= 3 @(:sum drvs)))))
 
 (t/deftest sync-derivatives-test
-  (let [drvs (drv/sync-derivatives (test-spec (atom 1)) {} [:base :inc])]
+  (let [drvs (drv/sync-derivatives! (test-spec (atom 1)) {} [:base :inc])]
     (t/is (= 1 @(:base drvs)))
     (t/is (= 2 @(:inc drvs)))
     (t/is (nil? (:as-map drvs)))
@@ -30,24 +36,24 @@
 
 (t/deftest sync-derivatives-test
   (let [spec (test-spec (atom 1))
-        drvs (drv/sync-derivatives spec {} [:base :inc])]
+        drvs (drv/sync-derivatives! spec {} [:base :inc])]
     (t/is (= 1 @(:base drvs)))
     (t/is (= 2 @(:inc drvs)))
     (t/is (nil? (:as-map drvs)))
     (t/is (nil? (:sum drvs)))
     (t/is (= [:inc] @compute-log))
     ;; sync with more required keys
-    (let [drvs-updated (drv/sync-derivatives spec drvs [:base :inc :as-map])]
+    (let [drvs-updated (drv/sync-derivatives! spec drvs [:base :inc :as-map])]
       (t/is (= [:inc :as-map] @compute-log)))))
 
-;; fails, fixed by proper disposable derived-atoms
-;; (t/deftest watches-disposed-test
-;;   (let [base  (atom 1)
-;;         spec  (test-spec base)
-;;         drvs1 (drv/sync-derivatives spec {} [:base :inc])
-;;         drvs2 (drv/sync-derivatives spec drvs1 [:base])]
-;;     (swap! base inc)
-;;     (t/is (= [:inc] @compute-log))))
+;; This test will fail if watches are not properly removed from source refs
+(t/deftest watches-disposed-test
+  (let [base  (atom 1)
+        spec  (test-spec base)
+        drvs1 (drv/sync-derivatives! spec {} [:base :inc])
+        drvs2 (drv/sync-derivatives! spec drvs1 [:base])]
+    (swap! base inc)
+    (t/is (= [:inc] @compute-log))))
 
 (t/deftest pool-test
   (let [base  (atom 1)
