@@ -109,7 +109,7 @@ compared with the way this could be described using *derivatives*:
   ;; {name    [depends-upon     derive-fn]}
   {:db        [[]               *db]
    :increased [[:db]            (fn [db] (inc (:count db)))]
-   :as-map    [[:db :increased] (fn [db incd] {:db db :increased inch})]})
+   :as-map    [[:db :increased] (fn [db incd] {:db db :increased incd})]})
 ```
 
 The benefit here is that we don't use vars to make sure the dependencies are met and that we provide this information in a way that can easily be turned into a dependency graph (data FTW) which will later help us only calculating required *derivatives* (done by `derivatives-manager`). In comparison the first snippet will create derived-atoms and recalculate them whenever any of their dependencies change, no matter if you're using the derived-atom in any of your views.
