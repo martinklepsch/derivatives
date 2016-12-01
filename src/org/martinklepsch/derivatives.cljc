@@ -3,6 +3,7 @@
             [org.martinklepsch.derived :as derived]
             [clojure.set :as s]
             [rum.core :as rum]
+            [rum.util :as rutil]
             #?(:cljs [goog.object :as gobj])))
 
 (defn depend'
@@ -166,6 +167,23 @@
   "Like `get-ref` wrapped in `rum.core/react`"
   [state drv-k]
   (rum/react (get-ref state drv-k)))
+
+(defn drvs [& ks]
+  (let [ds (map d/drv ks)
+        will-mount (rutil/collect :will-mount ds)
+        will-unmount (rutil/collect :will-unmount ds)]
+    {:class-properties (:class-properties (first ds))
+     :will-mount (fn [s]
+                   (assoc
+                     (rutil/call-all s will-mount)
+                     ::drvs ks))
+     :will-unmount (fn [s] (rutil/call-all s will-unmount))}))
+
+(defn react-drvs [state]
+  (map
+    (partial d/react state)
+    (::drvs state)))
+
 
 (comment 
   (def base (atom 0))
