@@ -169,7 +169,7 @@
   (rum/react (get-ref state drv-k)))
 
 (defn drvs [& ks]
-  (let [ds (map d/drv ks)
+  (let [ds (map drv ks)
         will-mount (rutil/collect :will-mount ds)
         will-unmount (rutil/collect :will-unmount ds)]
     {:class-properties (:class-properties (first ds))
@@ -181,7 +181,7 @@
 
 (defn react-drvs [state]
   (map
-    (partial d/react state)
+    (partial react state)
     (::drvs state)))
 
 
