@@ -148,7 +148,21 @@
                            (let [release-drv! (-> s :rum/react-component (gobj/get "context") (gobj/get release-k))]
                              (assert release-drv! "No release! derivative function found in component context")
                              (release-drv! drv-k token)
-                             (update s ::derivatives dissoc drv-k)))}))))
+                             (update s ::derivatives dissoc drv-k)))})))
+
+  (defn drvs
+    "Rum mixin similar to `drv` except that you can supply multiple derivative identifiers"
+    [& drv-ks]
+    #?(:cljs
+       (let [ds           (map drv drv-ks)
+             will-mount   (rutil/collect :will-mount ds)
+             will-unmount (rutil/collect :will-unmount ds)]
+         {:class-properties class-properties
+          :will-mount (fn [s]
+                        (assoc
+                         (rutil/call-all s will-mount)
+                         ::drvs drv-ks))
+          :will-unmount (fn [s] (rutil/call-all s will-unmount))}))))
 
 (def ^:dynamic *derivatives* nil)
 
@@ -167,22 +181,8 @@
   [state drv-k]
   (rum/react (get-ref state drv-k)))
 
-(defn drvs [& ks]
-  (let [ds (map drv ks)
-        will-mount (rutil/collect :will-mount ds)
-        will-unmount (rutil/collect :will-unmount ds)]
-    {:class-properties (:class-properties (first ds))
-     :will-mount (fn [s]
-                   (assoc
-                     (rutil/call-all s will-mount)
-                     ::drvs ks))
-     :will-unmount (fn [s] (rutil/call-all s will-unmount))}))
-
 (defn react-drvs [state]
-  (map
-    (partial react state)
-    (::drvs state)))
-
+  (map #(react state %) (::drvs state)))
 
 (comment 
   (def base (atom 0))
