@@ -112,7 +112,8 @@
 (let [get-k     "org.martinklepsch.derivatives/get"
       release-k "org.martinklepsch.derivatives/release"
       class-properties #?(:cljs {:childContextTypes {get-k     js/React.PropTypes.func
-                                                     release-k js/React.PropTypes.func}})]
+                                                     release-k js/React.PropTypes.func}}
+                          :clj {})]
 
   (defn rum-derivatives
     "Given the passed spec add get!/release! derivative functions to
