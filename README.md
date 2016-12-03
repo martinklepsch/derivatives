@@ -1,5 +1,7 @@
 # Derivatives [![CircleCI](https://circleci.com/gh/martinklepsch/derivatives.svg?style=svg)](https://circleci.com/gh/martinklepsch/derivatives)
 
+[usage](#usage) | [comparisons](#comparisons) |[change log](https://github.com/martinklepsch/derivatives/blob/master/CHANGES.md)
+
 **A note on terminology:** There are a lot of things with similar meanings/use-cases around: subscriptions, reactions, derived atoms, view models. 
 I'll introduce another to make things even worse: *derivative*. A *derivative* implements `IWatchable` and it's value is the result of applying a function to the value of other things (*sources*) implementing `IWatchable`. Whenever any of the *sources* change the value of the *derivative* is updated.
 
