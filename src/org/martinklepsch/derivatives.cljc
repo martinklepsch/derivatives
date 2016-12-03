@@ -110,7 +110,9 @@
 ;; RUM specific code ===========================================================
 
 (let [get-k     "org.martinklepsch.derivatives/get"
-      release-k "org.martinklepsch.derivatives/release"]
+      release-k "org.martinklepsch.derivatives/release"
+      class-properties #?(:cljs {:childContextTypes {get-k     js/React.PropTypes.func
+                                                     release-k js/React.PropTypes.func}})]
 
   (defn rum-derivatives
     "Given the passed spec add get!/release! derivative functions to
@@ -118,8 +120,7 @@
     mixin."
     [spec]
     #?(:cljs
-       {:class-properties {:childContextTypes {get-k     js/React.PropTypes.func
-                                               release-k js/React.PropTypes.func}}
+       {:class-properties class-properties
         :child-context    (fn [_] (let [{:keys [release! get!]} (derivatives-pool spec)]
                                     {release-k release! get-k get!}))}))
 
@@ -127,8 +128,7 @@
     "Like rum-derivatives but get the spec from the arguments passed to the components (`:rum/args`) using `get-spec-fn`"
     [get-spec-fn]
     #?(:cljs
-       {:class-properties {:childContextTypes {get-k     js/React.PropTypes.func
-                                               release-k js/React.PropTypes.func}}
+       {:class-properties class-properties
         :init             (fn [s _] (assoc s ::spec (get-spec-fn (:rum/args s))))
         :child-context    (fn [s] (let [{:keys [release! get!]} (derivatives-pool (::spec s))]
                                     {release-k release! get-k get!}))}))
@@ -139,8 +139,7 @@
     [drv-k]
     #?(:cljs
        (let [token (rand-int 10000)] ; TODO think of something better here
-         {:class-properties {:contextTypes {get-k     js/React.PropTypes.func
-                                            release-k js/React.PropTypes.func}}
+         {:class-properties class-properties
           :will-mount    (fn [s]
                            (let [get-drv! (-> s :rum/react-component (gobj/get "context") (gobj/get get-k))]
                              (assert get-drv! "No get! derivative function found in component context")
