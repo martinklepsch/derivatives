@@ -12,14 +12,15 @@
         text (d/react state :product/text)] 
      ...)
 ```
-    Now it is possible to combine these calls with `org.martinklepsch.derivatives/drvs`:
 
-    ```clojure
+Now it is possible to combine these calls with `org.martinklepsch.derivatives/drvs`:
+
+```clojure
 (rum/defcs block < rum/reactive (d/drvs :product/page :product/images :product/text) 
   [state]
   (let [[page images text] (d/react-drvs state)] 
       ...)
-    ```
+```
 
 ### 0.1.1
 
