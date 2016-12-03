@@ -10,7 +10,7 @@
   (let [page (d/react state :product/page)
         images (d/react state :product/images)
         text (d/react state :product/text)] 
-     ...)
+     ...))
 ```
 
 Now it is possible to combine these calls with `org.martinklepsch.derivatives/drvs`:
@@ -19,7 +19,7 @@ Now it is possible to combine these calls with `org.martinklepsch.derivatives/dr
 (rum/defcs block < rum/reactive (d/drvs :product/page :product/images :product/text) 
   [state]
   (let [[page images text] (d/react-drvs state)] 
-      ...)
+      ...))
 ```
 
 ### 0.1.1
