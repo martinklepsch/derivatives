@@ -149,21 +149,7 @@
           :will-unmount  (fn [s]
                            (let [release-drv! (-> s :rum/react-component (gobj/get "context") (gobj/get release-k))]
                              (assert release-drv! "No release! derivative function found in component context")
-                             (reduce #(do (release-drv! %2 token) (update %1 ::derivatives dissoc %2)) s drv-ks)))})))
-
-  #_(defn drvs
-    "Rum mixin similar to `drv` except that you can supply multiple derivative identifiers"
-    [& drv-ks]
-    #?(:cljs
-       (let [ds           (map drv drv-ks)
-             will-mount   (rutil/collect :will-mount ds)
-             will-unmount (rutil/collect :will-unmount ds)]
-         {:class-properties {:contextTypes context-types}
-          :will-mount (fn [s]
-                        (assoc
-                         (rutil/call-all s will-mount)
-                         ::drvs drv-ks))
-          :will-unmount (fn [s] (rutil/call-all s will-unmount))}))))
+                             (reduce #(do (release-drv! %2 token) (update %1 ::derivatives dissoc %2)) s drv-ks)))}))))
 
 (def ^:dynamic *derivatives* nil)
 
