@@ -111,9 +111,9 @@
 
 (let [get-k     "org.martinklepsch.derivatives/get"
       release-k "org.martinklepsch.derivatives/release"
-      class-properties #?(:cljs {:childContextTypes {get-k     js/React.PropTypes.func
-                                                     release-k js/React.PropTypes.func}}
-                          :clj {})]
+      context-types #?(:cljs {get-k     js/React.PropTypes.func
+                              release-k js/React.PropTypes.func}
+                       :clj  {})]
 
   (defn rum-derivatives
     "Given the passed spec add get!/release! derivative functions to
@@ -121,7 +121,7 @@
     mixin."
     [spec]
     #?(:cljs
-       {:class-properties class-properties
+       {:class-properties {:childContextTypes context-types}
         :child-context    (fn [_] (let [{:keys [release! get!]} (derivatives-pool spec)]
                                     {release-k release! get-k get!}))}))
 
@@ -129,36 +129,36 @@
     "Like rum-derivatives but get the spec from the arguments passed to the components (`:rum/args`) using `get-spec-fn`"
     [get-spec-fn]
     #?(:cljs
-       {:class-properties class-properties
+       {:class-properties {:childContextTypes context-types}
         :init             (fn [s _] (assoc s ::spec (get-spec-fn (:rum/args s))))
         :child-context    (fn [s] (let [{:keys [release! get!]} (derivatives-pool (::spec s))]
                                     {release-k release! get-k get!}))}))
 
   (defn drv
-    "Rum mixin to retrieve a derivative for `:drv-k` using the functions in the component context
+    "Rum mixin to retrieve derivatives for `drv-ks` using the functions in the component context
      To get the derived-atom use `get-ref` for swappable client/server behavior"
-    [drv-k]
+    [& drv-ks]
     #?(:cljs
        (let [token (rand-int 10000)] ; TODO think of something better here
-         {:class-properties class-properties
+         (assert (seq drv-ks) "The drv mixin needs at least one derivative ID")
+         {:class-properties {:contextTypes context-types}
           :will-mount    (fn [s]
                            (let [get-drv! (-> s :rum/react-component (gobj/get "context") (gobj/get get-k))]
                              (assert get-drv! "No get! derivative function found in component context")
-                             (assoc-in s [::derivatives drv-k] (get-drv! drv-k token))))
+                             (reduce #(assoc-in %1 [::derivatives %2] (get-drv! %2 token)) s drv-ks)))
           :will-unmount  (fn [s]
                            (let [release-drv! (-> s :rum/react-component (gobj/get "context") (gobj/get release-k))]
                              (assert release-drv! "No release! derivative function found in component context")
-                             (release-drv! drv-k token)
-                             (update s ::derivatives dissoc drv-k)))})))
+                             (reduce #(do (release-drv! %2 token) (update %1 ::derivatives dissoc %2)) s drv-ks)))})))
 
-  (defn drvs
+  #_(defn drvs
     "Rum mixin similar to `drv` except that you can supply multiple derivative identifiers"
     [& drv-ks]
     #?(:cljs
        (let [ds           (map drv drv-ks)
              will-mount   (rutil/collect :will-mount ds)
              will-unmount (rutil/collect :will-unmount ds)]
-         {:class-properties class-properties
+         {:class-properties {:contextTypes context-types}
           :will-mount (fn [s]
                         (assoc
                          (rutil/call-all s will-mount)
@@ -182,8 +182,9 @@
   [state drv-k]
   (rum/react (get-ref state drv-k)))
 
-(defn react-drvs [state]
-  (map #(react state %) (::drvs state)))
+(defn react-drvs [state & ks]
+  (->> (if (seq ks) ks (-> state ::derivatives keys))
+       (map #(react state %))))
 
 (comment 
   (def base (atom 0))
