@@ -1,11 +1,12 @@
 (set-env!
  :resource-paths  #{"src"}
  :dependencies '[[adzerk/bootlaces          "0.1.13"     :scope "test"]
-                 [adzerk/boot-cljs          "1.7.228-1"  :scope "test"]
+                 [adzerk/boot-cljs          "1.7.228-2"  :scope "test"]
                  [adzerk/boot-test          "1.1.2"      :scope "test"]
-                 [adzerk/boot-reload        "0.4.11"     :scope "test"]
+                 [adzerk/boot-reload        "0.4.13"     :scope "test"]
                  [pandeiro/boot-http        "0.7.3"      :scope "test"]
-                 [org.clojure/clojurescript "1.9.93"     :scope "provided"]
+                 [org.clojure/clojure       "1.9.0-alpha14" :scope "provided"]
+                 [org.clojure/clojurescript "1.9.293"     :scope "provided"]
                  [com.stuartsierra/dependency "0.2.0"]
                  [rum "0.10.5"]])
 
