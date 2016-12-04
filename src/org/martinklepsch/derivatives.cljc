@@ -175,7 +175,7 @@
          :clj  (get *derivatives* drv-k))
       (throw (ex-info (str "No derivative found! Maybe you forgot a (drv " drv-k ") mixin?")
                       {:key drv-k :derivatives #?(:cljs (keys (::derivatives state))
-                                                  :clj (keys *derivatives*))}))))
+                                                  :clj  (keys *derivatives*))}))))
 
 (defn react
   "Like `get-ref` wrapped in `rum.core/react`"
@@ -183,8 +183,8 @@
   (rum/react (get-ref state drv-k)))
 
 (defn react-drvs [state & ks]
-  (->> (if (seq ks) ks (-> state ::derivatives keys))
-       (map #(react state %))))
+  (let [ks (or (seq ks) (-> state ::derivatives keys))]
+    (zipmap ks (map #(react state %) ks))))
 
 (comment 
   (def base (atom 0))
