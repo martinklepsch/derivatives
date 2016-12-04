@@ -168,7 +168,12 @@
   [state drv-k]
   (rum/react (get-ref state drv-k)))
 
-(defn react-drvs [state & ks]
+(defn react-drvs
+  "React to multiple derivatives in the components state.
+   If any `ks` are passed, react to those and return their values
+   in a map. If no `ks` is passed return all available derivatives
+   deref'ed as a map."
+  [state & ks]
   (let [ks (or (seq ks) (-> state ::derivatives keys))]
     (zipmap ks (map #(react state %) ks))))
 
