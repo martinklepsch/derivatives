@@ -1,8 +1,8 @@
 ### to be released
 
 
-- implement own `derived-value` that can be disposed, which will remove watches on sources (atoms or other watchable things) [PR #2](https://github.com/martinklepsch/derivatives/pull/2)
-- Extend Rum `drv` mixin to accept multiple arguments [PR #5](https://github.com/martinklepsch/derivatives/pull/5) & [PR #8](https://github.com/martinklepsch/derivatives/pull/8).
+- **New Feature** Implement own `derived-value` that can be disposed, which will remove watches on sources (atoms or other watchable things) [PR #2](https://github.com/martinklepsch/derivatives/pull/2)
+- **New Feature** Extend Rum `drv` mixin to accept multiple arguments [PR #5](https://github.com/martinklepsch/derivatives/pull/5) & [PR #8](https://github.com/martinklepsch/derivatives/pull/8).
   Previously you called `d/drv` multiple times:
 
     ```clojure
@@ -31,13 +31,16 @@
     (d/react-all state :product/page) -> {:product/page 'val}
     ```
 
-- **Interal:** the `sync-derivatives!` function and the
+- **Internal** The `sync-derivatives!` function and the
   `DerivativesPool` constructor now receive an extra argument
   `watch-key-prefix` that helps avoiding conflicts when creating
   multiple pools from a single source atom with specs that have
   overlapping keys. See
   [#10](https://github.com/martinklepsch/derivatives/issues/10) for
   details.
+- **Bugfix** Fix wrong assumption in tests that would cause them to fail when a spec
+  contains more complex keys: `37cda80`
+- **Bugfix** Fix issue where `sync-derivatives!` would fail if spec keys don't implement IFn
 
 ### 0.1.1
 
