@@ -14,19 +14,19 @@
 ```
 
 Now it is possible to pass multiple keywords to `org.martinklepsch.derivatives/drv` and also there is a new function
-`react-drvs` that can be used to dereference multiple derivatives at once:
+`react-all` that can be used to dereference multiple or all known derivatives at once:
 
 ```clojure
 (rum/defcs block < rum/reactive (d/drv :product/page :product/images :product/text)
   [state]
-  (let [{:keys [:product/text]} (d/react-drvs state)]
+  (let [{:keys [:product/text]} (d/react-all state)]
     [:p text]
       ...))
 ```
 
 ```clojure
-(d/react-drvs state) -> {:product/page 'val :product/images 'val :product/text 'val}
-(d/react-drvs state :product/page) -> {:product/page 'val}
+(d/react-all state) -> {:product/page 'val :product/images 'val :product/text 'val}
+(d/react-all state :product/page) -> {:product/page 'val}
 ```
 
 ### 0.1.1
