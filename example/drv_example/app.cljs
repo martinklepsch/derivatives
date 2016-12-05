@@ -33,11 +33,11 @@
     [item ":as-map " (-> (d/react s :as-map) pr-str)]
     [item ":sum "    (-> (d/react s :sum) pr-str)]]])
 
-(rum/defcs derived-view-react-drvs-all < rum/reactive (d/drv :inc :as-map :sum) (d/drv :base)
+(rum/defcs derived-view-react-all < rum/reactive (d/drv :inc :as-map :sum) (d/drv :base)
   [s]
   [:div
-   [item "Both mixin varians, " [:code "react-drvs"]]
-   (let [{:keys [base inc as-map sum]} (d/react-drvs s)]
+   [item "Both mixin varians, " [:code "react-all"]]
+   (let [{:keys [base inc as-map sum]} (d/react-all s)]
      [container
       [item ":base "   (-> base pr-str)]
       [item ":inc "    (-> inc pr-str)]
@@ -47,8 +47,8 @@
 (rum/defcs derived-view-react-both < rum/reactive (d/drv :inc :as-map :sum) (d/drv :base)
   [s]
   [:div
-   [item "Both mixin varians, " [:code "react-drvs"] " and singular " [:code "react"]]
-   (let [{:keys [base inc]} (d/react-drvs s :base :inc)]
+   [item "Both mixin varians, " [:code "react-all"] " and singular " [:code "react"]]
+   (let [{:keys [base inc]} (d/react-all s :base :inc)]
      [container
       [item ":base "   (-> base pr-str)]
       [item ":inc "    (-> inc pr-str)]
@@ -69,16 +69,16 @@
   [:div.cf
    [:div.fl.w-50.pa2 (derived-view)]
    [:div.fl.w-50.pa2 (derived-view-variadic-mixin)]
-   [:div.fl.w-50.pa2 (derived-view-react-drvs-all)]
+   [:div.fl.w-50.pa2 (derived-view-react-all)]
    [:div.fl.w-50.pa2 (derived-view-react-both)]])
 
-(rum/defc dataflow-test < (d/rum-derivatives (drv-spec *state))
+(rum/defc spec-via-mixin < (d/rum-derivatives (drv-spec *state))
   []
   [:div
    [:h3.mb4.pa2 "Derviatives spec passed to mixin"]
    (drv-variant-table)])
 
-(rum/defc dataflow-test* < (d/rum-derivatives* first)
+(rum/defc spec-via-args < (d/rum-derivatives* first)
   [spec]
   [:div
    [:h3.mb4.pa2 "Derviatives spec extracted from arguments"]
@@ -88,9 +88,9 @@
   [:div.pa4
    (heading)
    [:hr.mv3.ba]
-   (dataflow-test* (drv-spec *state))
+   (spec-via-args (drv-spec *state))
    [:hr.mv3.ba]
-   (dataflow-test)])
+   (spec-via-mixin)])
 
 (defn init []
   (rum/mount (root-component) (js/document.getElementById "container")))
