@@ -13,13 +13,20 @@
      ...))
 ```
 
-Now it is possible to combine these calls with `org.martinklepsch.derivatives/drvs`:
+Now it is possible to pass multiple keywords to `org.martinklepsch.derivatives/drv` and also there is a new function
+`react-drvs` that can be used to dereference multiple derivatives at once:
 
 ```clojure
-(rum/defcs block < rum/reactive (d/drvs :product/page :product/images :product/text) 
+(rum/defcs block < rum/reactive (d/drv :product/page :product/images :product/text)
   [state]
-  (let [[page images text] (d/react-drvs state)] 
+  (let [{:keys [:product/text]} (d/react-drvs state)]
+    [:p text]
       ...))
+```
+
+```clojure
+(d/react-drvs state) -> {:product/page 'val :product/images 'val :product/text 'val}
+(d/react-drvs state :product/page) -> {:product/page 'val}
 ```
 
 ### 0.1.1
