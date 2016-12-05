@@ -2,7 +2,7 @@
 
 
 - implement own `derived-value` that can be disposed, which will remove watches on sources (atoms or other watchable things) [PR #2](https://github.com/martinklepsch/derivatives/pull/2)
-- add Rum mixins to inject multiple derivatives [PR #5](https://github.com/martinklepsch/derivatives/pull/5)  
+- Extend Rum `drv` mixin to accept multiple arguments [PR #5](https://github.com/martinklepsch/derivatives/pull/5) & [PR #8](https://github.com/martinklepsch/derivatives/pull/8).
   Previously you called `d/drv` multiple times:
 
     ```clojure
@@ -14,8 +14,10 @@
         ...))
     ```
 
-  Now it is possible to pass multiple keywords to `org.martinklepsch.derivatives/drv` and also there is a new function
-  `react-all` that can be used to dereference multiple or all known derivatives at once:
+  Now it is possible to pass multiple keywords to the same function
+  with the same result as multiple invocations. Also there is a new
+  function `react-all` that can be used to dereference multiple or all
+  known derivatives at once:
 
     ```clojure
     (rum/defcs block < rum/reactive (d/drv :product/page :product/images :product/text)
