@@ -6,6 +6,10 @@
             [rum.util :as rutil]
             #?(:cljs [goog.object :as gobj])))
 
+(defn prefix-id []
+  #?(:cljs (random-uuid)
+     :clj (java.util.UUID/randomUUID)))
+
 (defn depend'
   "Variation of `depend` that takes a list of dependencies instead of one"
   [graph node deps]
@@ -42,7 +46,7 @@
   "Update the derivatives map `drv-map` so that all keys passed in `order`
   are statisfied and any superfluous keys are removed.
   Values of superfluous keys that implement IDisposable they will also be disposed."
-  [spec drv-map order]
+  [spec watch-key-prefix drv-map order]
   (doseq [drv-val (not-required drv-map (set order))]
     (when (satisfies? derived/IDisposable drv-val)
       (derived/dispose! drv-val)))
@@ -52,7 +56,7 @@
                 m
                 (if (watchable? derive)
                   (assoc m k derive)
-                  (assoc m k (derived/derived-value (map #(get m %) direct-deps) k derive))))))
+                  (assoc m k (derived/derived-value (map #(get m %) direct-deps) [watch-key-prefix k] derive))))))
           (select-keys drv-map order)
           order))
 
@@ -66,7 +70,7 @@
   removing them as soon as they become unused"
   [spec]
   {:pre [(map? spec)]}
-  (sync-derivatives! spec {} (dep/topo-sort (spec->graph spec))))
+  (sync-derivatives! spec (prefix-id) {} (dep/topo-sort (spec->graph spec))))
 
 (defn ^:private required-drvs [graph registry]
   (let [required? (calc-deps graph (keys registry))]
@@ -76,13 +80,13 @@
   (get! [this drv-k token])
   (release! [this drv-k token]))
 
-(defrecord DerivativesPool [spec graph state]
+(defrecord DerivativesPool [spec watch-key-prefix graph state]
   IDerivativesPool
   (get! [this drv-k token]
     (if-not (get spec drv-k)
       (throw (ex-info (str "No derivative defined for " drv-k) {:key drv-k}))
       (let [new-reg  (update (:registry @state) drv-k (fnil conj #{}) token)
-            new-drvs (sync-derivatives! spec (:derivatives @state) (required-drvs graph new-reg))]
+            new-drvs (sync-derivatives! spec watch-key-prefix (:derivatives @state) (required-drvs graph new-reg))]
         (reset! state {:derivatives new-drvs :registry new-reg})
         (get new-drvs drv-k))))
   (release! [this drv-k token]
@@ -90,7 +94,7 @@
           new-reg   (if (= #{token} (get registry drv-k))
                       (dissoc registry drv-k)
                       (update registry drv-k disj token))
-          new-drvs (sync-derivatives! spec (:derivatives @state) (required-drvs graph new-reg))]
+          new-drvs (sync-derivatives! spec watch-key-prefix (:derivatives @state) (required-drvs graph new-reg))]
       (reset! state {:derivatives new-drvs :registry new-reg})
       nil)))
 
@@ -103,7 +107,10 @@
     is no longer needed by `token`, if there are no more tokens needing
     the derivative it will be removed"
   [spec]
-  (let [dm (->DerivativesPool spec (spec->graph spec) (atom {}))]
+  (let [dm (map->DerivativesPool {:spec spec
+                                  :watch-key-prefix (prefix-id)
+                                  :graph (spec->graph spec)
+                                  :state (atom {})})]
     {:get! (partial get! dm)
      :release! (partial release! dm)}))
 

@@ -27,7 +27,7 @@
     (t/is (= 3 @(:sum drvs)))))
 
 (t/deftest sync-derivatives-test
-  (let [drvs (drv/sync-derivatives! (test-spec (atom 1)) {} [:base :inc])]
+  (let [drvs (drv/sync-derivatives! (test-spec (atom 1)) (drv/prefix-id) {} [:base :inc])]
     (t/is (= 1 @(:base drvs)))
     (t/is (= 2 @(:inc drvs)))
     (t/is (nil? (:as-map drvs)))
@@ -36,22 +36,24 @@
 
 (t/deftest sync-derivatives-test
   (let [spec (test-spec (atom 1))
-        drvs (drv/sync-derivatives! spec {} [:base :inc])]
+        id   (drv/prefix-id)
+        drvs (drv/sync-derivatives! spec id {} [:base :inc])]
     (t/is (= 1 @(:base drvs)))
     (t/is (= 2 @(:inc drvs)))
     (t/is (nil? (:as-map drvs)))
     (t/is (nil? (:sum drvs)))
     (t/is (= [:inc] @compute-log))
     ;; sync with more required keys
-    (let [drvs-updated (drv/sync-derivatives! spec drvs [:base :inc :as-map])]
+    (let [drvs-updated (drv/sync-derivatives! spec id drvs [:base :inc :as-map])]
       (t/is (= [:inc :as-map] @compute-log)))))
 
 ;; This test will fail if watches are not properly removed from source refs
 (t/deftest watches-disposed-test
   (let [base  (atom 1)
         spec  (test-spec base)
-        drvs1 (drv/sync-derivatives! spec {} [:base :inc])
-        drvs2 (drv/sync-derivatives! spec drvs1 [:base])]
+        id    (drv/prefix-id)
+        drvs1 (drv/sync-derivatives! spec id {} [:base :inc])
+        drvs2 (drv/sync-derivatives! spec id drvs1 [:base])]
     (swap! base inc)
     (t/is (= [:inc] @compute-log))))
 
@@ -73,7 +75,7 @@
   (let [base  (atom 1)
         spec  (test-spec base)
         pool-state (atom {})
-        dm (drv/->DerivativesPool spec (drv/spec->graph spec) pool-state)]
+        dm (drv/->DerivativesPool spec (drv/prefix-id) (drv/spec->graph spec) pool-state)]
     (t/is (thrown? Exception @(drv/get! dm :unknown-foo :1-token)))
     (t/is (= {} @pool-state)))) ; pool state should not get modified
 
@@ -81,7 +83,7 @@
   (let [base  (atom 1)
         spec  (test-spec base)
         pool-state (atom {})
-        dm (drv/->DerivativesPool spec (drv/spec->graph spec) pool-state)]
+        dm (drv/->DerivativesPool spec (drv/prefix-id) (drv/spec->graph spec) pool-state)]
 
     (drv/get! dm :sum :1-token)
     (t/is (= {:sum #{:1-token}} (:registry @pool-state)))
@@ -105,7 +107,7 @@
   (let [base  (atom 1)
         spec  (test-spec base)
         pool-state (atom {})
-        dm (drv/->DerivativesPool spec (drv/spec->graph spec) pool-state)]
+        dm (drv/->DerivativesPool spec (drv/prefix-id) (drv/spec->graph spec) pool-state)]
     (t/is (= base (drv/get! dm :base :abc)))
     (let [am-ref (drv/get! dm :as-map :t1)]
       (t/is (= (drv/get! dm :sum :t1) (drv/get! dm :sum :t2)))

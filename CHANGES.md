@@ -29,6 +29,13 @@ Now it is possible to pass multiple keywords to `org.martinklepsch.derivatives/d
 (d/react-all state :product/page) -> {:product/page 'val}
 ```
 
+- the `sync-derivatives!` function and the `DerivativesPool`
+  constructor now receive an extra argument `watch-key-prefix` that
+  helps avoiding conflicts when creating multiple pools from a single
+  source atom with specs that have overlapping keys. See
+  [#10](https://github.com/martinklepsch/derivatives/issues/10) for
+  details.
+
 ### 0.1.1
 
 - add tests
