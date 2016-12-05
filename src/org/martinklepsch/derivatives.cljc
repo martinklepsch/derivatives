@@ -168,7 +168,7 @@
   [state drv-k]
   (rum/react (get-ref state drv-k)))
 
-(defn react-drvs
+(defn react-all
   "React to multiple derivatives in the components state.
    If any `ks` are passed, react to those and return their values
    in a map. If no `ks` is passed return all available derivatives
