@@ -1,4 +1,9 @@
-(ns org.martinklepsch.derived)
+(ns org.martinklepsch.derived
+  "An implementation of reactive derived values built on Clojure
+  atoms. Mostly inspired by rum.core/derived-atom but extended with
+  the possibility to dispose a derived value. Disposing will remove
+  relevant watches on source atoms thus making this implementation
+  suitable for dynamic use (runtime creation and disposal).")
 
 (defprotocol IDisposable
   (dispose! [this]))
