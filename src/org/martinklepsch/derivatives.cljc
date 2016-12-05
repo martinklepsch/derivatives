@@ -51,7 +51,7 @@
     (when (satisfies? derived/IDisposable drv-val)
       (derived/dispose! drv-val)))
   (reduce (fn [m k]
-            (let [[direct-deps derive] (-> spec k)]
+            (let [[direct-deps derive] (get spec k)]
               (if (get m k)
                 m
                 (if (watchable? derive)
