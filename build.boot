@@ -10,7 +10,7 @@
                  [com.stuartsierra/dependency "0.2.0"]
                  [rum "0.10.5"]])
 
-(def +version+ "0.2.0-alpha")
+(def +version+ "0.2.0")
 
 (task-options!
  pom {:project     'org.martinklepsch/derivatives

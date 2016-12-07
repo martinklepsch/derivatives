@@ -1,4 +1,4 @@
-### to be released
+### 0.2.0
 
 
 - **New Feature** Implement own `derived-value` that can be disposed, which will remove watches on sources (atoms or other watchable things) [PR #2](https://github.com/martinklepsch/derivatives/pull/2)

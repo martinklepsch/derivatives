@@ -35,7 +35,7 @@ A secondary objective is also to achieve the above without relying on global sta
 
 [](dependency)
 ```clojure
-[org.martinklepsch/derivatives "0.1.1"] ;; latest release
+[org.martinklepsch/derivatives "0.2.0"] ;; latest release
 ```
 [](/dependency)
 
