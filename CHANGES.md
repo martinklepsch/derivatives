@@ -39,8 +39,9 @@
   overlapping keys. See
   [#10](https://github.com/martinklepsch/derivatives/issues/10) for
   details.
-  - **This change is breaking** if you call `->DerivativesPool`, `map->Derivatives` or
-    `sync-derivatives!` directly. Most likely you are not though :)
+  - **This change is breaking** if you call `->DerivativesPool`,
+    `map->DerivativesPool` or `sync-derivatives!` directly. Most
+    likely you are not though :)
 - **Bugfix** Fix wrong assumption in tests that would cause them to fail when a spec
   contains more complex keys: [`37cda80`](https://github.com/martinklepsch/derivatives/commit/37cda80c35a5c936ac8bf4fe84a2595362bd93e4)
 - **Bugfix** Fix issue where `sync-derivatives!` would fail if spec keys don't implement IFn [`b5f9545`](https://github.com/martinklepsch/derivatives/commit/b5f9545437823fa8b9730ca8f32a00eaa9d85f02)
