@@ -74,7 +74,11 @@
 
 (defn ^:private required-drvs [graph registry]
   (let [required? (calc-deps graph (keys registry))]
-    (filter required? (dep/topo-sort graph))))
+    (or (seq (filter required? (dep/topo-sort graph)))
+        ;; When only derivatives that don't have any dependencies
+        ;; are used they are not included in the topo-sort result
+        ;; in this case just return the required keys
+        (seq required?))))
 
 (defprotocol IDerivativesPool
   (get! [this drv-k token])
