@@ -1,5 +1,10 @@
 (See [legend](#legend) at the end for some rough definition of the bold labels in front of each item.)
 
+### to be released
+
+- **Bugfix** with a spec like `{:db [[] (atom {})]}` it was not possible to get ahold of the `:db` atom. ([64efb6f3](https://github.com/martinklepsch/derivatives/commit/64efb6f3a35c60a8493bb3f2a718e339cee9ff73))
+- **Breaking** `derivatives-pool` now returns the record instead of a map with the `get!` and `release!` functions. If you only used the Rum mixins this should not affect you.
+
 ### 0.2.0
 
 - **Improvement** Implement own `derived-value` that can be disposed, which will remove watches on sources (atoms or other watchable things). Previously Rum's `derived-atom` was used which does not support cleaning up watches when they are no longer needed. [PR #2](https://github.com/martinklepsch/derivatives/pull/2)
@@ -65,6 +70,7 @@
 
 #### Legend
 
+- **Breaking**: A refactoring that may potentially break backwards compatibility
 - **Improvement**: An improvement that is not breaking compatibility and thus should not require action from your side
 - **New Feature**: An extension to the API that may make your life easier
 - **Bugfix**: Fix of broken behavior. If you think you might rely on the bug check the linked commit.
