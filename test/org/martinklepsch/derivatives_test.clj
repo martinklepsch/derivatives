@@ -65,14 +65,14 @@
     (t/is (= [kinc] @compute-log))))
 
 (t/deftest pool-test
-  (let [base  (atom 1)
-        spec  (test-spec base)
-        {:keys [get! release!]} (drv/derivatives-pool spec)]
-    (t/is (= 1 @(get! kbase :1-token)))
+  (let [base (atom 1)
+        spec (test-spec base)
+        pool (drv/derivatives-pool spec)]
+    (t/is (= 1 @(drv/get! pool kbase :1-token)))
     (t/is (= [] @compute-log))
-    (t/is (= 2 @(get! kinc :2-token)))
+    (t/is (= 2 @(drv/get! pool kinc :2-token)))
     (t/is (= [kinc] @compute-log))
-    (t/is (= 3 @(get! ksum :3-token)))
+    (t/is (= 3 @(drv/get! pool ksum :3-token)))
     (t/is (= [kinc kas-map ksum] @compute-log))
     (swap! base inc)
     ;; Previously this test was used:
@@ -82,7 +82,7 @@
     (t/is (at-least-n-in kinc 2 @compute-log))
     (t/is (at-least-n-in ksum 2 @compute-log))
     (t/is (at-least-n-in kas-map 3 @compute-log))
-    (t/is (= 5 @(get! ksum :3-token)))))
+    (t/is (= 5 @(drv/get! pool ksum :3-token)))))
 
 (t/deftest pool-throws-if-unknown-test
   (let [base  (atom 1)

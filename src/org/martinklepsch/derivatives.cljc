@@ -111,12 +111,16 @@
     is no longer needed by `token`, if there are no more tokens needing
     the derivative it will be removed"
   [spec]
-  (let [dm (map->DerivativesPool {:spec spec
+  #_(let [dm (map->DerivativesPool {:spec spec
                                   :watch-key-prefix (prefix-id)
                                   :graph (spec->graph spec)
                                   :state (atom {})})]
     {:get! (partial get! dm)
-     :release! (partial release! dm)}))
+     :release! (partial release! dm)})
+  (map->DerivativesPool {:spec spec
+                         :watch-key-prefix (prefix-id)
+                         :graph (spec->graph spec)
+                         :state (atom {})}))
 
 ;; RUM specific code ===========================================================
 
@@ -133,8 +137,9 @@
     [spec]
     #?(:cljs
        {:class-properties {:childContextTypes context-types}
-        :child-context    (fn [_] (let [{:keys [release! get!]} (derivatives-pool spec)]
-                                    {release-k release! get-k get!}))}))
+        :child-context    (fn [_] (let [pool (derivatives-pool spec)]
+                                    {release-k (partial release! pool)
+                                     get-k (partial get! pool)}))}))
 
   (defn rum-derivatives*
     "Like rum-derivatives but get the spec from the arguments passed to the components (`:rum/args`) using `get-spec-fn`"
@@ -142,8 +147,9 @@
     #?(:cljs
        {:class-properties {:childContextTypes context-types}
         :init             (fn [s _] (assoc s ::spec (get-spec-fn (:rum/args s))))
-        :child-context    (fn [s] (let [{:keys [release! get!]} (derivatives-pool (::spec s))]
-                                    {release-k release! get-k get!}))}))
+        :child-context    (fn [s] (let [pool (derivatives-pool (::spec s))]
+                                    {release-k (partial release! pool)
+                                     get-k (partial get! pool)}))}))
 
   (defn drv
     "Rum mixin to retrieve derivatives for `drv-ks` using the functions in the component context
