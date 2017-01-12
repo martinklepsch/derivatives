@@ -46,7 +46,7 @@ A secondary objective is also to achieve the above without relying on global sta
 
 (def drv-spec
   {;; a source with no dependencies
-   :db     [[]         your-db-atom]
+   :db     [[]         *db-atom]
    ;; a derivative with a dependency
    :inc    [[:db]      (fn [db] (inc db))]
    ;; a derivative with multiple dependencies
