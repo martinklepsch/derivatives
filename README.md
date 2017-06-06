@@ -55,7 +55,7 @@ A secondary objective is also to achieve the above without relying on global sta
 
 A specification like the above can be easily turned into a map with the same keys where the values are *derivatives* (see `org.martinklepsch.derivatives/build`).
 
-Also it can be turned into a registry that can help with only creating needed derivatives and freeing them up when they become unused (see `org.martinklepsch.derivatives/derivatives-manager`).
+Also it can be turned into a registry that can help with only creating needed derivatives and freeing them up when they become unused (see `org.martinklepsch.derivatives/derivatives-pool`).
 
 > What follows is Rum specific and this library has a dependency on Rum but this pattern could be used with old Om apps, or even Reagent's reactions. I'm very open to changes in that direction.
 
@@ -116,7 +116,7 @@ compared with the way this could be described using *derivatives*:
    :as-map    [[:db :increased] (fn [db incd] {:db db :increased incd})]})
 ```
 
-The benefit here is that we don't use vars to make sure the dependencies are met and that we provide this information in a way that can easily be turned into a dependency graph (data FTW) which will later help us only calculating required *derivatives* (done by `derivatives-manager`). In comparison the first snippet will create derived-atoms and recalculate them whenever any of their dependencies change, no matter if you're using the derived-atom in any of your views.
+The benefit here is that we don't use vars to make sure the dependencies are met and that we provide this information in a way that can easily be turned into a dependency graph (data FTW) which will later help us only calculating required *derivatives* (done by `derivatives-pool`). In comparison the first snippet will create derived-atoms and recalculate them whenever any of their dependencies change, no matter if you're using the derived-atom in any of your views.
 
 
 #### Re-Frame Subscriptions
