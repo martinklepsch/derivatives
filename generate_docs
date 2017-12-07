@@ -8,21 +8,39 @@
 # current working tree. You can have local file modifications, but the git index
 # (staging area) must be clean.
 
+############################################################
+# These variables can all be overridden from the command line,
+# e.g. TARGET_REMOTE=plexus ./generate_docs
+
 # The git remote to fetch and push to. Also used to find the parent commit.
-TARGET_REMOTE="origin"
+TARGET_REMOTE=${TARGET_REMOTE:-"origin"}
 
 # Branch name to commit and push to
-TARGET_BRANCH="gh-pages"
+TARGET_BRANCH=${TARGET_BRANCH:-"gh-pages"}
 
 # Command that generates the API docs
-DOC_CMD="boot gen-docs target"
+DOC_CMD=${DOC_CMD:-"boot gen-docs target"}
 
 # Working tree directory. The output of $DOC_CMD must end up in this directory.
-WORK_TREE="target/gh-pages"
+WORK_TREE=${WORK_TREE:-"target/gh-pages"}
+
+############################################################
 
 if ! git diff-index --quiet --cached HEAD ; then
     echo "Git index isn't clean. Make sure you have no staged changes. (try 'git reset .')"
     exit
+fi
+
+MESSAGE="Updating docs based on $(git rev-parse --abbrev-ref HEAD) $(git rev-parse HEAD)"
+
+if [[ ! -z "$(git status --porcelain)" ]]; then
+  MESSAGE="$MESSAGE
+
+    Status:
+$(git status --short)
+
+    Diff:
+$(git diff)"
 fi
 
 git fetch $TARGET_REMOTE
@@ -44,11 +62,12 @@ echo "Created git tree $TREE"
 # new orphan commit
 if git show-ref --quiet --verify "refs/remotes/${TARGET_REMOTE}/${TARGET_BRANCH}" ; then
     PARENT=`git rev-parse ${TARGET_REMOTE}/${TARGET_BRANCH}`
-    echo "Creating commit with parent ${PARENT} ${TARGET_REMOTE}/${TARGET_BRANCH}"
-    COMMIT=`git commit-tree -p $PARENT $TREE -m 'Updating docs'`
+    echo "Creating commit with parent refs/remotes/${TARGET_REMOTE}/${TARGET_BRANCH} ${PARENT}"
+    COMMIT=$(git commit-tree -p $PARENT $TREE -m "$MESSAGE")
 else
     echo "Creating first commit of the branch"
-    COMMIT=`git commit-tree $TREE -m 'Updating docs'`
+    echo git commit-tree $TREE -m $(quote "$MESSAGE")
+    COMMIT=$(git commit-tree $TREE -m "$MESSAGE")
 fi
 
 echo "Commit $COMMIT"
@@ -59,11 +78,13 @@ echo "Pushing to $TARGET_BRANCH"
 git reset .
 
 # Push the newly created commit to remote
-git push $TARGET_REMOTE $COMMIT:refs/heads/$TARGET_BRANCH
-
-# Make sure our local remotes are up to date.
-git fetch
-
-# Show what happened, you should see a little stat diff here of the changes
-echo
-git log -1 --stat $TARGET_REMOTE/$TARGET_BRANCH
+if [[ ! -z "$PARENT" ]] && [[ $(git rev-parse ${COMMIT}^{tree}) == $(git rev-parse refs/remotes/$TARGET_REMOTE/$TARGET_BRANCH^{tree} ) ]] ; then
+    echo "WARNING: No changes in documentation output from previous commit. Not pushing to ${TARGET_BRANCH}"
+else
+    git push $TARGET_REMOTE $COMMIT:refs/heads/$TARGET_BRANCH
+    # Make sure our local remotes are up to date.
+    git fetch
+    # Show what happened, you should see a little stat diff here of the changes
+    echo
+    git log -1 --stat $TARGET_REMOTE/$TARGET_BRANCH
+fi
