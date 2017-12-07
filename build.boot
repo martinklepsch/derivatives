@@ -44,3 +44,8 @@
         (reload)
         (speak)
         (cljs)))
+
+(deftask gen-docs []
+  (codox :name "Derivatives"
+         :version +version+
+         :output-path "gh-pages"))

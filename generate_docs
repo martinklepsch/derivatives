@@ -15,7 +15,7 @@ TARGET_REMOTE="origin"
 TARGET_BRANCH="gh-pages"
 
 # Command that generates the API docs
-DOC_CMD="boot codox -n derivatives -o gh-pages -s src target"
+DOC_CMD="boot gen-docs target"
 
 # Working tree directory. The output of $DOC_CMD must end up in this directory.
 WORK_TREE="target/gh-pages"
