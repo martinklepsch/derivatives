@@ -35,9 +35,13 @@ $DOC_CMD
 echo "Adding file to git index"
 git --work-tree=$WORK_TREE add -A
 
+# Create a git tree object with the exact contents of $WORK_TREE (the output of
+# the DOC_CMD), this will be file tree of the new commit that's being created.
 TREE=`git write-tree`
 echo "Created git tree $TREE"
 
+# Create the new commit, either with the previous remote HEAD as parent, or as a
+# new orphan commit
 if git show-ref --quiet --verify "refs/remotes/${TARGET_REMOTE}/${TARGET_BRANCH}" ; then
     PARENT=`git rev-parse ${TARGET_REMOTE}/${TARGET_BRANCH}`
     echo "Creating commit with parent ${PARENT} ${TARGET_REMOTE}/${TARGET_BRANCH}"
@@ -50,8 +54,16 @@ fi
 echo "Commit $COMMIT"
 echo "Pushing to $TARGET_BRANCH"
 
+# Rest the index, commit-tree doesn't do that by itself. If we don't do this
+# `git status` or `git diff` will look *very* weird.
 git reset .
+
+# Push the newly created commit to remote
 git push $TARGET_REMOTE $COMMIT:refs/heads/$TARGET_BRANCH
+
+# Make sure our local remotes are up to date.
 git fetch
+
+# Show what happened, you should see a little stat diff here of the changes
 echo
 git log -1 --stat $TARGET_REMOTE/$TARGET_BRANCH
