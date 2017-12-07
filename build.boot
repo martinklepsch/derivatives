@@ -5,6 +5,7 @@
                  [adzerk/boot-test          "1.1.2"      :scope "test"]
                  [adzerk/boot-reload        "0.4.13"     :scope "test"]
                  [pandeiro/boot-http        "0.7.3"      :scope "test"]
+                 [boot-codox                "0.10.3"     :scope "test"]
                  [org.clojure/clojure       "1.9.0-alpha14" :scope "provided"]
                  [org.clojure/clojurescript "1.9.293"     :scope "provided"]
                  [com.stuartsierra/dependency "0.2.0"]
@@ -26,7 +27,8 @@
  '[adzerk.boot-cljs      :refer [cljs]]
  '[adzerk.boot-test      :refer [test]]
  '[adzerk.boot-reload    :refer [reload]]
- '[pandeiro.boot-http    :refer [serve]])
+ '[pandeiro.boot-http    :refer [serve]]
+ '[codox.boot :refer [codox]])
 
 (bootlaces! +version+)
 
