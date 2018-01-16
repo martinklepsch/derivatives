@@ -1,9 +1,12 @@
 (See [legend](#legend) at the end for some rough definition of the bold labels in front of each item.)
 
-### to be released
+### 0.3.0
 
+- :warning: **Breaking** `derivatives-pool` now returns the record instead of a map with the `get!` and `release!` functions. **If you did not directly call the `derivatives-pool` function (and used the Rum mixins) this should not affect you.** ([e813f1ddfd7](https://github.com/martinklepsch/derivatives/commit/e813f1ddfd7636a5b6371bd4ff5bb75054e28e6c))
+  - To upgrade replace uses of the `get!` and `release!` functions with their pendants in `org.martinklepsch.derivatives` (same names) and pass the derivatives pool record that is now returned by `derivatives-pool` as first argument.
+  - Sorry for this breakage I hope it does not affect too many. :raised_hands:
+- **Improvement** depend on `cljsjs/react-proptypes` for React 16 compatibility ([#18](https://github.com/martinklepsch/derivatives/pull/18))
 - **Bugfix** with a spec like `{:db [[] (atom {})]}` it was not possible to get ahold of the `:db` atom. ([64efb6f3](https://github.com/martinklepsch/derivatives/commit/64efb6f3a35c60a8493bb3f2a718e339cee9ff73))
-- **Breaking** `derivatives-pool` now returns the record instead of a map with the `get!` and `release!` functions. If you only used the Rum mixins this should not affect you.
 
 ### 0.2.0
 
