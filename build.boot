@@ -7,19 +7,20 @@
                  [pandeiro/boot-http        "0.7.3"      :scope "test"]
                  [boot-codox                "0.10.3"     :scope "test"]
                  [org.clojure/clojure       "1.9.0-alpha14" :scope "provided"]
-                 [org.clojure/clojurescript "1.9.293"     :scope "provided"]
+                 [org.clojure/clojurescript "1.9.946"     :scope "provided"]
                  [com.stuartsierra/dependency "0.2.0"]
                  [rum "0.10.8"]
                  [cljsjs/prop-types "15.5.10-1"]])
 
 (def +version+ "0.2.0")
+(def github "https://github.com/martinklepsch/derivatives")
 
 (task-options!
  pom {:project     'org.martinklepsch/derivatives
       :version     +version+
       :description "Chains of derived values"
-      :url         "https://github.com/martinklepsch/derivatives"
-      :scm         {:url "https://github.com/martinklepsch/derivatives"}})
+      :url         github
+      :scm         {:url github}})
 
 ;; Example app stuff ============================================================
 
