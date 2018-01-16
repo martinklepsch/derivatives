@@ -4,7 +4,8 @@
             [clojure.set :as s]
             [rum.core :as rum]
             [rum.util :as rutil]
-            #?(:cljs [goog.object :as gobj])))
+            #?@(:cljs [[goog.object :as gobj]
+                       [cljsjs.prop-types]])))
 
 (defn prefix-id []
   #?(:cljs (random-uuid)
@@ -126,8 +127,8 @@
 
 (let [get-k     "org.martinklepsch.derivatives/get"
       release-k "org.martinklepsch.derivatives/release"
-      context-types #?(:cljs {get-k     js/React.PropTypes.func
-                              release-k js/React.PropTypes.func}
+      context-types #?(:cljs {get-k     js/PropTypes.func
+                              release-k js/PropTypes.func}
                        :clj  {})]
 
   (defn rum-derivatives
