@@ -10,9 +10,9 @@
                  [org.clojure/clojurescript "1.9.946"     :scope "provided"]
                  [com.stuartsierra/dependency "0.2.0"]
                  [rum "0.10.8"]
-                 [cljsjs/prop-types "15.5.10-1"]])
+                 [cljsjs/prop-types "15.6.0-0"]])
 
-(def +version+ "0.3.0")
+(def +version+ "0.3.1")
 (def github "https://github.com/martinklepsch/derivatives")
 
 (task-options!
