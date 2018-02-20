@@ -137,7 +137,7 @@
     mixin."
     [spec]
     #?(:cljs
-       {:class-properties {:childContextTypes context-types}
+       {:static-properties {:childContextTypes context-types}
         :child-context    (fn [_] (let [pool (derivatives-pool spec)]
                                     {release-k (partial release! pool)
                                      get-k (partial get! pool)}))}))
@@ -146,7 +146,7 @@
     "Like rum-derivatives but get the spec from the arguments passed to the components (`:rum/args`) using `get-spec-fn`"
     [get-spec-fn]
     #?(:cljs
-       {:class-properties {:childContextTypes context-types}
+       {:static-properties {:childContextTypes context-types}
         :init             (fn [s _] (assoc s ::spec (get-spec-fn (:rum/args s))))
         :child-context    (fn [s] (let [pool (derivatives-pool (::spec s))]
                                     {release-k (partial release! pool)
@@ -159,7 +159,7 @@
     #?(:cljs
        (let [token (rand-int 10000)] ; TODO think of something better here
          (assert (seq drv-ks) "The drv mixin needs at least one derivative ID")
-         {:class-properties {:contextTypes context-types}
+         {:static-properties {:contextTypes context-types}
           :will-mount    (fn [s]
                            (let [get-drv! (-> s :rum/react-component (gobj/get "context") (gobj/get get-k))]
                              (assert get-drv! "No get! derivative function found in component context")
