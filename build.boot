@@ -12,7 +12,7 @@
                  [rum "0.10.8"]
                  [cljsjs/prop-types "15.6.0-0"]])
 
-(def +version+ "0.3.0")
+(def +version+ "0.3.1-alpha")
 (def github "https://github.com/martinklepsch/derivatives")
 
 (task-options!

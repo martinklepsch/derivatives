@@ -1,5 +1,10 @@
 (See [legend](#legend) at the end for some rough definition of the bold labels in front of each item.)
 
+### 0.3.1-alpha
+
+- upgrade `prop-types` dependency ([#20](https://github.com/martinklepsch/derivatives/pull/20))
+- use `:static-properties` instead of `:class-properties` to pass `:childContextTypes` ([#20](https://github.com/martinklepsch/derivatives/pull/20))
+
 ### 0.3.0
 
 - :warning: **Breaking** `derivatives-pool` now returns the record instead of a map with the `get!` and `release!` functions. **If you did not directly call the `derivatives-pool` function (and used the Rum mixins) this should not affect you.** ([e813f1ddfd7](https://github.com/martinklepsch/derivatives/commit/e813f1ddfd7636a5b6371bd4ff5bb75054e28e6c))
