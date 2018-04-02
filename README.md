@@ -1,5 +1,7 @@
 # Derivatives [![CircleCI](https://circleci.com/gh/martinklepsch/derivatives.svg?style=svg)](https://circleci.com/gh/martinklepsch/derivatives)
 
+*Subscriptions distilled.*
+
 [usage](#usage) | [comparisons](#comparisons) | [change log](https://github.com/martinklepsch/derivatives/blob/master/CHANGES.md) | [API docs](https://martinklepsch.github.io/derivatives/)
 
 **A note on terminology:** There are a lot of things with similar meanings/use-cases around: subscriptions, reactions, derived atoms, view models. 
@@ -30,6 +32,7 @@ A secondary objective is also to achieve the above without relying on global sta
 ### What this library doesn't help with
 
 - Ensuring the required data is in `db` (server/client rendering)
+- [Parameterized Subscriptions](#why-no-parameterized-subscriptions)
 
 ## Usage
 
@@ -125,6 +128,17 @@ The way they work Re-Frame's dynamic subscriptions are not much different from t
 
 - In Re-Frame you can do `(subscribe [:sub-id "a parameter"])`, with *derivatives* you can't. Instead these parameters need to be put into `db` and be used (potentially via another *derivative*) from there.
 - In Re-Frame subscriptions may have side-effects to listen to remote changes etc. This library does not intend to solve this kind of problem and thus side effects are discouraged.
+
+#### Why no parameterized subscriptions?
+
+In my personal experience a lot of non-idiomatic, non performance
+optimal re-frame use comes from having subscriptions in every corner
+of the code. Parameterized subscriptions enable this even more.
+
+While a bandaid more than a solution the lack of parameterized
+subscriptions in Derivatives is meant to discourage ad-hoc, throwaway
+subscription use and instead encourage thoughtful reshaping of data
+from your DB into a form suitable for rendering.
 
 ## Contributing
 
