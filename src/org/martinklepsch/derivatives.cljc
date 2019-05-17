@@ -104,20 +104,14 @@
       nil)))
 
 (defn derivatives-pool
-  "Given a derivatives spec return a map with `get!` and `free!` functions.
+  "Given a derivatives spec return an instance of `DerivativesPool`.
 
-  - (get! derivative-id token) will retrieve a derivative for
+  - `(get! pool derivative-id token)` will retrieve a derivative for
     `derivative-id` registering the usage with `token`
-  - (free! derivative-id token) will indicate the derivative `derivative-id`
-    is no longer needed by `token`, if there are no more tokens needing
-    the derivative it will be removed"
+  - `(release! pool derivative-id token)` will indicate the derivative
+    `derivative-id` is no longer needed by `token`, if there are no
+    more tokens needing the derivative it will be removed"
   [spec]
-  #_(let [dm (map->DerivativesPool {:spec spec
-                                  :watch-key-prefix (prefix-id)
-                                  :graph (spec->graph spec)
-                                  :state (atom {})})]
-    {:get! (partial get! dm)
-     :release! (partial release! dm)})
   (map->DerivativesPool {:spec spec
                          :watch-key-prefix (prefix-id)
                          :graph (spec->graph spec)
